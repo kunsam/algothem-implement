@@ -72,6 +72,18 @@ export class RedBlackTreePage extends React.Component<{app: App}> {
       this.props.app.eventManager.listenInsertKey((key) => {
         this._redBlackTreeViewObject!.insert(key);
       });
+      this.props.app.eventManager.listenDeleteKey((key) => {
+        this._redBlackTreeViewObject!.delete(key);
+      });
+      this.props.app.eventManager.listenFindKey((key) => {
+        this._redBlackTreeViewObject!.search(key);
+      });
+      this.props.app.eventManager.listenLeftRotate((key) => {
+        this._redBlackTreeViewObject!.rotate(key, true);
+      });
+      this.props.app.eventManager.listenRightRotate((key) => {
+        this._redBlackTreeViewObject!.rotate(key);
+      });
     });
     return treeContainer;
   }

@@ -7,7 +7,7 @@ import { App } from '../pages/tree/red-black-tree';
 interface ButtonInputPairProps{
   type?: string;
   label: string;
-  app?: App;
+  disabled?: boolean;
   onConfirm: (key: number) => void;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -17,15 +17,6 @@ export class ButtonInputPair extends React.Component<ButtonInputPairProps, any> 
     super(props);
     this.state = {
       value: '',
-      operating: false,
-    }
-    if (this.props.app) {
-      this.props.app.eventManager.listenOperationDone(() => {
-        this.setState({
-          value: '',
-          operating: false,
-        });
-      });
     }
   }
 
@@ -37,18 +28,17 @@ export class ButtonInputPair extends React.Component<ButtonInputPairProps, any> 
   public onClick() {
     if (this.state.value) {
       this.props.onConfirm(parseInt(this.state.value));
-      this.setState({ operating: true });
+      this.setState({ value: '' });
     }
   }
 
   render() {
-    // const 
     return (
       <div className="ButtonInputPair">
         <Input
-          disabled={this.state.operating}
           type={this.props.type}
           value={this.state.value}
+          disabled={this.props.disabled === undefined ? false : this.props.disabled}
           onKeyDown={e => {
             if (e.keyCode === 13) this.onClick()
           }}
@@ -60,13 +50,29 @@ export class ButtonInputPair extends React.Component<ButtonInputPairProps, any> 
   }
 }
 
-export class ControlPanel extends React.Component<{ app: App }> {
+export class ControlPanel extends React.Component<{ app: App }, {
+  operating: boolean,
+}> {
+
+  private _operationDone: boolean;
 
   constructor(props: any) {
     super(props);
     this.state = {
-      insertKey: ''
+      operating: false,
     };
+    this._operationDone = false;
+  }
+
+  public onOperationDone() {
+    this._operationDone = true;
+    this.setState({ operating: false });
+  }
+
+  componentDidMount() {
+    if (this.props.app) {
+      this.props.app.eventManager.listenOperationDone(this.onOperationDone.bind(this));
+    }
   }
 
   public onInsert(e: React.ChangeEvent<HTMLInputElement>) {
@@ -76,46 +82,75 @@ export class ControlPanel extends React.Component<{ app: App }> {
   
   }
 
+  public onConfirmFind(key: number) {
+    this.props.app.eventManager.emitFindKey(key);
+    this._change2Operating();
+  }
+
   public onConfirmInsert(key: number) {
     this.props.app.eventManager.emitInsertKey(key);
+    this._change2Operating();
+  }
+
+  public onConfirmDelete(key: number) {
+    this.props.app.eventManager.emitDeleteKey(key);
+    this._change2Operating();
+  }
+
+  public onConfirmLeftRotate(key: number) {
+    this.props.app.eventManager.emitLeftRotate(key);
+    this._change2Operating();
+  }
+
+  public onConfirmRightRotate(key: number) {
+    this.props.app.eventManager.emitRightRotate(key);
+    this._change2Operating();
+  }
+  
+  private _change2Operating() {
+    this.setState({ operating: true }, () => {
+      if (this._operationDone) {
+        this._operationDone = false;
+        this.setState({ operating: false })
+      }
+    });
   }
 
   render() {
-
     return (
       <div className="ControlPanel">
         <ButtonInputPair
           label="插入"
           type="number"
-          app={this.props.app}
+          disabled={this.state.operating}
           onConfirm={this.onConfirmInsert.bind(this)}
           onInputChange={this.onInsert.bind(this)}
         />
         <ButtonInputPair
           label="删除"
           type="number"
-          app={this.props.app}
-          onConfirm={this.onConfirmInsert}
-          onInputChange={this.onInsert}
+          disabled={this.state.operating}
+          onConfirm={this.onConfirmDelete.bind(this)}
+          onInputChange={() => {}}
         />
         <ButtonInputPair
           label="查找"
           type="number"
-          app={this.props.app}
-          onConfirm={this.onConfirmInsert}
-          onInputChange={this.onInsert}
+          disabled={this.state.operating}
+          onConfirm={this.onConfirmFind.bind(this)}
+          onInputChange={() => {}}
         />
         <ButtonInputPair
           label="左旋"
-          app={this.props.app}
-          onConfirm={this.onConfirmInsert}
-          onInputChange={this.onInsert}
+          disabled={this.state.operating}
+          onConfirm={this.onConfirmLeftRotate.bind(this)}
+          onInputChange={() => {}}
         />
         <ButtonInputPair
           label="右旋"
-          app={this.props.app}
-          onConfirm={this.onConfirmInsert}
-          onInputChange={this.onInsert}
+          disabled={this.state.operating}
+          onConfirm={this.onConfirmRightRotate.bind(this)}
+          onInputChange={() => {}}
         />
 
       </div>

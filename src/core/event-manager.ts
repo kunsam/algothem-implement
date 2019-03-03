@@ -1,9 +1,15 @@
-export enum CustomEventType{
-  onInsert = 'ONINSERT',
-  operationDone = 'OperationDone',
-}
+
 import EventEmitter from 'events'
 
+
+export enum CustomEventType{
+  onFind = 'onFind',
+  onInsert = 'ONINSERT',
+  onDelete = 'onDelete',
+  onLeftRotate = 'onLeftRotate',
+  operationDone = 'OperationDone',
+  onRightRotate = 'onRightRotate',
+}
 
 export default class EventManager{
   public event: EventEmitter;
@@ -25,6 +31,38 @@ export default class EventManager{
 
   public emitOperationDone() {
     this.event.emit(CustomEventType.operationDone);
+  }
+
+  public listenDeleteKey(listener: (key: number) => void) {
+    this.event.on(CustomEventType.onDelete, listener)
+  }
+
+  public emitDeleteKey(key: number) {
+    this.event.emit(CustomEventType.onDelete, key);
+  }
+
+  public listenFindKey(listener: (key: number) => void) {
+    this.event.on(CustomEventType.onFind, listener)
+  }
+
+  public emitFindKey(key: number) {
+    this.event.emit(CustomEventType.onFind, key);
+  }
+
+  public listenLeftRotate(listener: (key: number) => void) {
+    this.event.on(CustomEventType.onLeftRotate, listener)
+  }
+
+  public emitLeftRotate(key: number) {
+    this.event.emit(CustomEventType.onLeftRotate, key);
+  }
+
+  public listenRightRotate(listener: (key: number) => void) {
+    this.event.on(CustomEventType.onRightRotate, listener)
+  }
+
+  public emitRightRotate(key: number) {
+    this.event.emit(CustomEventType.onRightRotate, key);
   }
 
 }

@@ -8,70 +8,75 @@ export default class SwapKeyAnimator extends AnimatorBase {
   private _node1Mesh: THREE.Mesh;
   private _node2Mesh: THREE.Mesh;
 
-  private _node1InitMesh: THREE.Mesh;
-  private _node2InitMesh: THREE.Mesh;
+  private _node1TextMesh?: THREE.Object3D;
+  private _node2TextMesh?: THREE.Object3D;
+
+  private _node1TextInitMesh?: THREE.Object3D;
+  private _node2TextInitMesh?: THREE.Object3D;
 
   private _initOffset: THREE.Vector3;
 
   constructor(node1: RBNode, node2: RBNode, node1Mesh: THREE.Mesh, node2Mesh: THREE.Mesh, duration?: number) {
     super(node1, duration);
     this.node2 = node2;
-    this.currentFrame = 0;
     this._node1Mesh = node1Mesh;
     this._node2Mesh = node2Mesh;
-    this._node1InitMesh = node1Mesh.clone();
-    this._node2InitMesh = node2Mesh.clone();
-    this._initOffset = new THREE.Vector3().subVectors(node1Mesh.position, node2Mesh.position);
+
+    this._node1Mesh.children.every(c => {
+      if(c.userData.isKeyText) {
+        this._node1TextMesh = c;
+        this._node1TextInitMesh = c.clone();
+      }
+      return c.userData.isKeyText;
+    });
+    this._node2Mesh.children.every(c => {
+      if(c.userData.isKeyText) {
+        this._node2TextMesh = c;
+        this._node2TextInitMesh = c.clone();
+      }
+      return c.userData.isKeyText;
+    });
+
+    this._initOffset = new THREE.Vector3().subVectors(
+      node1Mesh.position,
+      node2Mesh.position,
+    );
   }
 
   private _moveText() {
-    this._node1Mesh.children.every(c => {
-      if(c.userData.isKeyText) {
-        c.position.copy(
-          this._node1InitMesh.position.clone().add(
-            this._initOffset.clone().normalize().multiplyScalar(
-              -1 * this.currentFrame * this._initOffset.length() / this.duration
-            )
-          )
+    if (!this._node1TextMesh || !this._node2TextMesh) {
+      return;
+    }
+    
+    this._node1TextMesh.position.copy(
+      this._node1TextInitMesh!.position.clone().add(
+        this._initOffset.clone().normalize().multiplyScalar(
+          -1 * this.currentFrame * this._initOffset.length() / this.duration
         )
-      }
-      return !c.userData.isKeyText;
-    });
+      )
+    );
 
-    this._node2Mesh.children.every(c => {
-      if (c.userData.isKeyText) {
-        c.position.copy(
-          this._node2InitMesh.position.clone().add(
-            this._initOffset.clone().normalize().multiplyScalar(
-              this.currentFrame * this._initOffset.length() / this.duration
-            )
-          )
+    this._node2TextMesh.position.copy(
+      this._node1TextInitMesh!.position.clone().add(
+        this._initOffset.clone().normalize().multiplyScalar(
+          this.currentFrame * this._initOffset.length() / this.duration
         )
-      }
-      return !c.userData.isKeyText;
-    });
+      )
+    );
+
   }
 
   private _swapText() {
-    this._node1Mesh.children.every(c => {
-      if(c.userData.isKeyText) {
-        this._node1Mesh.remove(c);
-        const newChild = this._node2InitMesh.clone();
-        newChild.position.copy(this._node1InitMesh.position);
-        this._node1Mesh.add(newChild);
-      }
-      return !c.userData.isKeyText;
-    });
+    if (!this._node1TextMesh || !this._node2TextMesh) {
+      return;
+    }
 
-    this._node2Mesh.children.every(c => {
-      if(c.userData.isKeyText) {
-        this._node2Mesh.remove(c);
-        const newChild = this._node1InitMesh.clone();
-        newChild.position.copy(this._node2InitMesh.position);
-        this._node1Mesh.add(newChild);
-      }
-      return !c.userData.isKeyText;
-    });
+    this._node1Mesh.remove(this._node1TextMesh);
+    this._node1Mesh.add(this._node2TextInitMesh!);
+
+    this._node2Mesh.remove(this._node2TextMesh);
+    this._node2Mesh.add(this._node1TextInitMesh!);
+
   }
 
   public animate() {

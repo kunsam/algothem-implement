@@ -1,10 +1,10 @@
-import { cloneDeep } from 'lodash';
+
 import * as THREE from 'three';
 import { message } from 'antd';
 import 'antd/lib/message/style/index.css';
 import FontManager from '../font/font-manager';
 import AnimatorBase from './animator/animator-base';
-import { RBNode, RBColor } from './../../tree/red-black-tree';
+import { RBNode } from './../../tree/red-black-tree';
 import RotatedAnimator from './animator/rotated-animator';
 import { App } from './../../../pages/tree/red-black-tree';
 import { getSphereNode, getConnectLineMesh } from './mesh';
@@ -13,6 +13,7 @@ import VisitedNodeAnimator from './animator/visited-node-animator';
 import { RedBlackTree, RBNodeDirtyInfo } from '../../tree/red-black-tree';
 import ShowTextAnimator from './animator/show-text-animator';
 import SwapKeyAnimator from './animator/swapkey-animator';
+import DeleteNodeAnimator from './animator/delete-animator';
 
 
 export enum RBNodeDirtyType{
@@ -21,6 +22,7 @@ export enum RBNodeDirtyType{
   swapKey = "SWAPKEY",
   visited = "VISITED",
   recolor = "RECOLOR",
+  deleted = "DELETED",
   showText = "SHOWTEXT",
   leftRotated = "LEFTROTATED",
   rightRotated = "RIGHTROTATED",
@@ -159,7 +161,7 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
       });
     } else {
       if (this._enterAnimating) {
-        message.info('Operation Done!', 0.1);
+        message.info('Operation Done!', 0.8);
         this._enterAnimating = false;
         this._app.eventManager.emitOperationDone();
       }
@@ -169,9 +171,8 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
   private _dityFlowsAnimationFlow(dirtyNodesFlows: RBNodeDirtyInfo[][]) {
     const logs: any[] = [];
     this._animatorFlows = [];
-    console.log(dirtyNodesFlows, 'dirtyNodesFlows')
     dirtyNodesFlows.forEach(nodeArray => {
-      logs.push(nodeArray.map(n => ({ dt: n.dirtyType, node: n.node })));
+      logs.push(nodeArray.map(n => ({ dt: n.dirtyType, node: n.node, data: n.data })));
       const animators: AnimatorBase[] = [];
       nodeArray.forEach(info => {
         switch (info.dirtyType) {
@@ -221,7 +222,7 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
           }
           case RBNodeDirtyType.showText: {
             if (!info.node) {
-              message.error(`NOT Found Node`, 0.1);
+              message.error(info.data.text, 1);
             } else {
               const viewobject = this._nodeViewObjectMap.get(info.node.key);
               if (viewobject) {
@@ -251,8 +252,24 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
                   viewobject.mesh,
                   viewobject2.mesh,
                 ));
+                this._nodeViewObjectMap.set(relatedNode.key, viewobject);
+                this._nodeViewObjectMap.set(info.node.key, viewobject2);
               }
             }
+            break;
+          }
+          case RBNodeDirtyType.deleted: {
+            if (info.data.key !== undefined) {
+              const viewobject = this._nodeViewObjectMap.get(info.data.key);
+              if (viewobject) {
+                animators.push(new DeleteNodeAnimator(
+                  new RBNode(info.data.key),
+                  viewobject.mesh,
+                ));
+                this._nodeViewObjectMap.delete(info.data.key);
+              }
+            }
+            break;
           }
         }
       });
@@ -262,30 +279,85 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
   }
 
   public insert(key: number) {
+    this.tree.dirtyFlows = [];
     if (!this.tree.root) {
       this.tree.insert(key);
       this.addNode(new RBNode(key));
+      this._app.eventManager.emitOperationDone();
       return;
     }
     if (this.tree.search(key)) {
+      message.error(`${key}已存在!`, 0.8)
+      this._app.eventManager.emitOperationDone();
       return;
     }
-
-    const dirtyNodesFlows: RBNodeDirtyInfo[][] = this.tree.insert(key, (r) => {
+    this.tree.insert(key, (r) => {
       this.addNode(r);
     });
+    const dirtyNodesFlows: RBNodeDirtyInfo[][] = this.tree.dirtyFlows;
     this._dityFlowsAnimationFlow(dirtyNodesFlows);
   }
 
   public delete(key: number) {
+    this.tree.dirtyFlows = [];
     if (!this.tree.root) {
+      this._app.eventManager.emitOperationDone();
+      message.error('不存在树', 0.8);
       return;
     }
-    const dirtyNodesFlows: RBNodeDirtyInfo[][] | undefined = this.tree.delete(key);
-    if (dirtyNodesFlows) {
-      // this._dityFlowsAnimationFlow(dirtyNodesFlows);
+    this.tree.delete(key);
+    const dirtyNodesFlows: RBNodeDirtyInfo[][] | undefined = this.tree.dirtyFlows;
+    if (!dirtyNodesFlows.length) {
+      message.error(`${key}不存在!`, 0.8);
+      this._app.eventManager.emitOperationDone();
+    } else {
+      dirtyNodesFlows.push([{
+        node: null,
+        data: { key },
+        dirtyType: RBNodeDirtyType.deleted,
+      }]);
+      this._dityFlowsAnimationFlow(dirtyNodesFlows);
     }
+  }
 
+  public search(key: number) {
+    this.tree.dirtyFlows = [];
+    const findNode = this.tree.search(key, true);
+    const dirtyNodesFlows: RBNodeDirtyInfo[][] | undefined = this.tree.dirtyFlows;
+    if (!findNode) {
+      message.error(`${key}不存在!`, 0.8);
+      this._app.eventManager.emitOperationDone();
+    } else {
+      dirtyNodesFlows.push([{
+        node: findNode,
+        data: { text: 'Find Target' },
+        dirtyType: RBNodeDirtyType.showText,
+      }]);
+      this._dityFlowsAnimationFlow(dirtyNodesFlows);
+    }
+  }
+
+  public rotate(key: number, isLeft?: boolean) {
+    this.tree.dirtyFlows = [];
+    const findNode = this.tree.search(key, true);
+    if (!findNode) {
+      message.error(`${key}不存在!`, 0.8);
+      this._app.eventManager.emitOperationDone();
+    } else {
+      let rotateSuccess = false;
+      if (isLeft) {
+        rotateSuccess = this.tree._rotateLeft(findNode);
+      } else {
+        rotateSuccess = this.tree._rotateRight(findNode);
+      }
+      const dirtyNodesFlows: RBNodeDirtyInfo[][] | undefined = this.tree.dirtyFlows;
+      if (!rotateSuccess) {
+        message.info(`Not support null as parent`, 0.1);
+        this._app.eventManager.emitOperationDone();
+      } else {
+        this._dityFlowsAnimationFlow(dirtyNodesFlows);
+      }
+    }
   }
 
 }
