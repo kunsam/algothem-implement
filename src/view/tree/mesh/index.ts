@@ -22,9 +22,9 @@ export function getSphereNode(node: NRBNode, font: THREE.Font): THREE.Mesh | und
     );
     text.position.y += 50;
     text.position.x -= 20;
+    text.userData.isKeyText = true;
     mesh.add(text);
   }
-
   mesh.userData.node = node;
   return mesh;
 }

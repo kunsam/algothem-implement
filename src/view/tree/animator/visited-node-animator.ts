@@ -3,17 +3,12 @@ import AnimatorBase from "./animator-base";
 import { RBNode } from "../../../tree/red-black-tree";
 
 export default class VisitedNodeAnimator extends AnimatorBase {
-  public END_FRAME = 20;
   private _mesh: THREE.Mesh;
-  private _frame: number = 0;
   private _oldColor?: THREE.Color;
 
   constructor(node: RBNode, mesh: THREE.Mesh, duration?: number) {
-    super(node);
+    super(node, duration);
     this._mesh = mesh;
-    if (duration) {
-      this.END_FRAME = duration;
-    }
   }
 
   private _changeColor() {
@@ -30,11 +25,11 @@ export default class VisitedNodeAnimator extends AnimatorBase {
   }
   
   public animate(): boolean {
-    if (this._frame < this.END_FRAME) {
-      this._frame++;
+    if (this.currentFrame < this.duration) {
+      this.currentFrame++;
       this._changeColor();
       return true;
-    } else if (this._frame >= this.END_FRAME) {
+    } else if (this.currentFrame >= this.duration) {
       this._resetColor();
     }
     return false;

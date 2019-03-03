@@ -1,3 +1,4 @@
+
 import { cloneDeep } from 'lodash';
 import { Node } from './basic-binary-tree';
 import { TraversalHelper } from "../util/traversal-helper";
@@ -6,6 +7,11 @@ import { RBNodeDirtyType } from '../view/tree/red-black-tree-viewobject';
 export enum RBColor {
   red = 1,
   black = 2,
+}
+
+export const RBCOLOR_HEX_TABLE = {
+  [RBColor.red]: 0xff0000,
+  [RBColor.black]: 0x000000,
 }
 
 export type NRBNode = RBNode | null;
@@ -122,8 +128,10 @@ export class RedBlackTree {
       return;
     }
     const temp = node1.color;
-    node1.color = node2.color;
-    node2.color = temp;
+    this._changeNodeColor([
+      { node: node1, color: node2.color },
+      { node: node2, color: temp },
+    ]);
   }
 
   private _swapKey(node1: RBNode, node2: RBNode) {
@@ -133,6 +141,11 @@ export class RedBlackTree {
     const temp = node1.key;
     node1.key = node2.key;
     node2.key = temp;
+    this.dirtyFlows.push([{
+      node: node1,
+      data: { relatedNode: node2 },
+      dirtyType: RBNodeDirtyType.swapKey,
+    }]);
   }
 
   public insert(key: number, afterBSTInsert?: (r: RBNode) => void) {
@@ -226,12 +239,6 @@ export class RedBlackTree {
     }])
   }
 
-  private _pushRecolorFlows(flows: RBNode[]) {
-    this.dirtyFlows.push(flows.map(node => ({
-      node, dirtyType: RBNodeDirtyType.recolor
-    })));
-  }
-
   private _fix2RedBlack(node: NRBNode) {
     if (node === null) {
       return;
@@ -264,13 +271,11 @@ export class RedBlackTree {
         let uncle = grandParent.right;
         /* Case : 1 The uncle of node is also red Only Recoloring required */
         if (uncle !== null && uncle.color == RBColor.red) { 
-          grandParent.color = RBColor.red; 
-          parent.color = RBColor.black;
-          uncle.color = RBColor.black;
-
-          const flows = [ grandParent, parent, uncle ];
-          this._pushRecolorFlows(flows);
-
+          this._changeNodeColor([
+            { node: grandParent, color: RBColor.red },
+            { node: parent, color: RBColor.black },
+            { node: uncle, color: RBColor.black },
+          ]);
           node = grandParent;
         } else {
           /* Case : 2 node is right child of its parent Left-rotation required */
@@ -282,17 +287,17 @@ export class RedBlackTree {
           /* Case : 3  node is left child of its parent Right-rotation required */
           this._rotateRight(grandParent);
           this._swapColor(parent, grandParent);
-          this._pushRecolorFlows([ parent!, grandParent ]);
           node = parent; 
         }
       } else {
         /* Case : B Parent of pt is right child of Grand-parent of pt */
         let uncle = grandParent.left;
         if (uncle !== null && uncle.color == RBColor.red) { 
-          grandParent.color = RBColor.red; 
-          parent.color = RBColor.black;
-          uncle.color = RBColor.black;
-          this._pushRecolorFlows([ grandParent, parent, uncle ]);
+          this._changeNodeColor([
+            { node: grandParent, color: RBColor.red },
+            { node: parent, color: RBColor.black },
+            { node: uncle, color: RBColor.black },
+          ]);
           node = grandParent;
         } else {
           /* Case : 2 node is right child of its parent Left-rotation required */
@@ -304,14 +309,14 @@ export class RedBlackTree {
           /* Case : 3  node is left child of its parent Right-rotation required */
           this._rotateLeft(grandParent); 
           this._swapColor(parent, grandParent);
-          this._pushRecolorFlows([ parent!, grandParent ]);
           node = parent;
         }
       }
     }
     if (this.root) {
-      this.root.color = RBColor.black;
-      this._pushRecolorFlows([ this.root ]);
+      this._changeNodeColor([
+        { node: this.root, color: RBColor.black }
+      ]);
     }
   }
 
@@ -366,13 +371,17 @@ export class RedBlackTree {
 
   private _deleteNode(node: RBNode) {
 
+    this.dirtyFlows.push([{
+      node: node,
+      data: { text: `delete target: ${node.key}` },
+      dirtyType: RBNodeDirtyType.showText,
+    }]);
+
     const replaceNode = this._BSTreplace(node);
-
-
     this.dirtyFlows.push([{
       node: replaceNode,
-      dirtyType: RBNodeDirtyType.find,
-      data: { text: 'replaceNode' }
+      data: { text: 'replaceNode' },
+      dirtyType: RBNodeDirtyType.showText,
     }]);
 
     const areBothBlack = (replaceNode === null || replaceNode.color === RBColor.black) &&
@@ -387,8 +396,11 @@ export class RedBlackTree {
         if (areBothBlack) {
           this._fixDoubleBlack(node);
         } else {
-          if (node.sibling()) {
-            node.sibling()!.color = RBColor.red;
+          const sibling = node.sibling();
+          if (sibling) {
+            this._changeNodeColor([{
+              node: sibling, color: RBColor.red
+            }]);
           }
         }
         if (node.parent) {
@@ -420,7 +432,7 @@ export class RedBlackTree {
           // TODO 这里一定不可能达到啊 如果只有一个child， replaceNode 也为黑，若replaceNode还有子节点，则在其他子节点路径必须还有黑，或者没有子节点，
           this._fixDoubleBlack(replaceNode);
         } else {
-          replaceNode.color = RBColor.black;
+          this._changeNodeColor([{node: replaceNode,color: RBColor.black}]);
         }
       }
       return;
@@ -431,6 +443,26 @@ export class RedBlackTree {
     this._deleteNode(replaceNode);
   }
 
+  private _changeNodeColor(arr: { node: RBNode, color: RBColor}[]) {
+    const result: RBNodeDirtyInfo[] = [];
+    arr.forEach(data => {
+      const { node, color } = data;
+      if (node.color !== color) {
+        result.push({
+          node,
+          data: { color: RBCOLOR_HEX_TABLE[color] },
+          dirtyType: RBNodeDirtyType.recolor,
+        });
+        node.color = color;
+      }
+    });
+    if (!result.length) {
+      console.log(arr, 'arrrrr')
+    } else {
+      this.dirtyFlows.push(result);
+    }
+
+  }
 
   private _fixDoubleBlack(node: NRBNode) {
     if (node === null || node === this.root) return;
@@ -443,8 +475,10 @@ export class RedBlackTree {
       this._fixDoubleBlack(parent);
     } else {
       if (sibling.color === RBColor.red) {
-        parent.color = RBColor.red;
-        sibling.color = RBColor.black;
+        this._changeNodeColor([
+          { node: parent, color: RBColor.red },
+          { node: sibling, color: RBColor.black },
+        ]);
         if (sibling.isOnLeft()) {
           this._rotateRight(parent);
         } else {
@@ -455,8 +489,10 @@ export class RedBlackTree {
         if (sibling.hasRedChild()) {
           if (sibling.left && sibling.left.color === RBColor.red) {
             if (sibling.isOnLeft()) {
-              sibling.left.color = sibling.color; 
-              sibling.color = parent.color;
+              this._changeNodeColor([
+                { node: sibling.left, color: sibling.color },
+                { node: sibling, color: parent.color },
+              ]);
               this._rotateRight(parent);
             } else {
               sibling.left.color = parent.color;
@@ -465,22 +501,32 @@ export class RedBlackTree {
             }
           } else {
             if (sibling.isOnLeft()) {
-              sibling.right!.color = parent.color;
+              this._changeNodeColor([
+                { node: sibling.right!, color: parent.color }
+              ]);
               this._rotateLeft(sibling);
               this._rotateRight(parent);
             } else {
-              sibling.right!.color = sibling.color; 
-              sibling.color = parent.color; 
+              this._changeNodeColor([
+                { node: sibling.right!, color: sibling.color },
+                { node: sibling, color: parent.color },
+              ]);
               this._rotateLeft(parent);
             }
           }
-          parent.color = RBColor.black;
+          this._changeNodeColor([
+            { node: parent, color: RBColor.black }
+          ]);
         } else {
-          sibling.color = RBColor.red;
+          this._changeNodeColor([
+            { node: sibling, color: RBColor.red }
+          ]);
           if (parent.color === RBColor.black) {
             this._fixDoubleBlack(parent);
           } else {
-            parent.color = RBColor.black;
+            this._changeNodeColor([
+              { node: parent, color: RBColor.black }
+            ]);
           }
         }
       }

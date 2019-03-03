@@ -3,19 +3,14 @@ import AnimatorBase from "./animator-base";
 import { RBNode } from "../../../tree/red-black-tree";
 
 export default class RecolorNodeAnimator extends AnimatorBase {
-  public END_FRAME = 20;
   private _mesh: THREE.Mesh;
-  private _frame: number = 0;
-  private _colorChanged: boolean = false;
   private _changeToColor: number;
+  private _colorChanged: boolean = false;
 
   constructor(node: RBNode, mesh: THREE.Mesh, changeToColor: number, duration?: number) {
-    super(node);
+    super(node, duration);
     this._mesh = mesh;
     this._changeToColor = changeToColor;
-    if (duration) {
-      this.END_FRAME = duration;
-    }
   }
 
   private _changeColor() {
@@ -29,8 +24,8 @@ export default class RecolorNodeAnimator extends AnimatorBase {
   }
 
   public animate() {
-    if (this._frame < this.END_FRAME) {
-      this._frame++;
+    if (this.currentFrame < this.duration) {
+      this.currentFrame++;
       this._changeColor();
       return true;
     }

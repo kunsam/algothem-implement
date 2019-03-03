@@ -15,19 +15,17 @@ export interface IRotateInfo{
 }
 
 export default class RotatedAnimator extends AnimatorBase {
-  public END_FRAME = 40;
-  private _frame: number = 0;
   private _dirtyType: RBNodeDirtyType;
   private _viewObjectMap: Map<number, RBNodeViewObject>;
   private _textMap: Map<number, THREE.Mesh> = new Map();
   private _initRotateInfoMap: Map<number, IRotateInfo> = new Map();
 
   constructor(node: RBNode, dirtyType: RBNodeDirtyType, map: Map<number, RBNodeViewObject>, duration?: number) {
-    super(node);
+    super(node, duration);
     this._viewObjectMap = map;
     this._dirtyType = dirtyType;
-    if (duration) {
-      this.END_FRAME = duration;
+    if (!duration) {
+      this.duration = 40;
     }
   }
   
@@ -70,8 +68,7 @@ export default class RotatedAnimator extends AnimatorBase {
       }
       this._initRotateInfoMap.set(node.key, initInfo);
     }
-
-    const animateAngle = -1 * sign * this._frame * Math.PI / this.END_FRAME;
+    const animateAngle = -1 * sign * this.currentFrame * Math.PI / this.duration;
     const x = initInfo.center.x + radius * Math.cos(animateAngle + initInfo.initAngle);
     const y = initInfo.center.y + radius * Math.sin(animateAngle + initInfo.initAngle);
 
@@ -170,7 +167,6 @@ export default class RotatedAnimator extends AnimatorBase {
     text.position.y += 80;
     text.position.x += 60;
     text.userData.isTextNode = true;
-    text.userData.immutable = true;
     nodeViewObject.mesh.add(text);
     this._textMap.set(nodeKey, nodeViewObject.mesh);
   }
@@ -187,11 +183,11 @@ export default class RotatedAnimator extends AnimatorBase {
   }
 
   public animate() {
-    if (this._frame < this.END_FRAME) {
-      this._frame++;
+    if (this.currentFrame < this.duration) {
+      this.currentFrame++;
       this._rotate();
       return true;
-    } else if (this._frame >= this.END_FRAME) {
+    } else if (this.currentFrame >= this.duration) {
       this._initRotateInfoMap.clear();
       this._resetText();
     }
