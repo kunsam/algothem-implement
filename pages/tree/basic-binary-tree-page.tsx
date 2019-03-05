@@ -13,7 +13,7 @@ import { RedBlackTreeViewObject } from '../../src/view/tree/red-black-tree-viewo
 import { AppEventType } from '../../src/core/event-manager';
 
 
-export enum IRedBlackTreeEventType{
+export enum IBasicTreeEventType{
   onFind = 'onFind',
   onInsert = 'ONINSERT',
   onDelete = 'onDelete',
@@ -22,7 +22,7 @@ export enum IRedBlackTreeEventType{
   onRightRotate = 'onRightRotate',
 }
 
-export class RedBlackTreePage extends React.Component<{app: App}> {
+export class BinaryTreePage extends React.Component<{app: App}> {
   public _redBlackTreeViewObject: RedBlackTreeViewObject | undefined;
 
   public initEvent(redBlackTreeViewObject: RedBlackTreeViewObject) {
@@ -31,13 +31,13 @@ export class RedBlackTreePage extends React.Component<{app: App}> {
     }
 
     const eventManager = this.props.app.eventManager;
-    eventManager.listen(IRedBlackTreeEventType.onInsert, (key: number) => {
+    eventManager.listen(IBasicTreeEventType.onInsert, (key: number) => {
       redBlackTreeViewObject.insert(key);
     });
-    eventManager.listen(IRedBlackTreeEventType.onDelete, (key: number) => {
+    eventManager.listen(IBasicTreeEventType.onDelete, (key: number) => {
       redBlackTreeViewObject.delete(key);
     });
-    eventManager.listen(IRedBlackTreeEventType.onFind, (key: number) => {
+    eventManager.listen(IBasicTreeEventType.onFind, (key: number) => {
       redBlackTreeViewObject.search(key);
     });
 

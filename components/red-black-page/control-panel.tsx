@@ -34,7 +34,7 @@ export class ControlPanel extends React.Component<{ app: App }, {
     if (!e.target.value) {
       return;
     }
-  
+
   }
 
   public onConfirmFind(key: number) {
@@ -43,9 +43,8 @@ export class ControlPanel extends React.Component<{ app: App }, {
   }
 
   public onConfirmInsert(key: number) {
-    console.log(this.props, 'this.props')
-    // this.props.app.eventManager.emit(IRedBlackTreeEventType.onInsert, key);
-    // this._change2Operating();
+    this.props.app.eventManager.emit(IRedBlackTreeEventType.onInsert, key);
+    this._change2Operating();
   }
 
   public onConfirmDelete(key: number) {
@@ -86,19 +85,6 @@ export class ControlPanel extends React.Component<{ app: App }, {
           onConfirm={this.onConfirmFind.bind(this)}
           onInputChange={() => {}}
         />
-        {/* <ButtonInputPair
-          label="左旋"
-          disabled={this.state.operating}
-          onConfirm={this.onConfirmLeftRotate.bind(this)}
-          onInputChange={() => {}}
-        />
-        <ButtonInputPair
-          label="右旋"
-          disabled={this.state.operating}
-          onConfirm={this.onConfirmRightRotate.bind(this)}
-          onInputChange={() => {}}
-        /> */}
-
       </div>
     )
   }

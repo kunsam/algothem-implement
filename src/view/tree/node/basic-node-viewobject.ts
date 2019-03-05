@@ -10,19 +10,22 @@ export enum MeshType {
 export default class BasicNodeViewobject extends THREE.Object3D {
 
   public node: BasicTreeNode;
-  public cloneNode?: BasicTreeNode; // for animation
 
+  public cloneNode?: BasicTreeNode; // for animation
+  private _viewObjectMap?: Map<number, BasicNodeViewobject>;
+
+  public lineMesh?: THREE.Line;
   public nodeMesh: THREE.Mesh = new THREE.Mesh();
   public textMesh: THREE.Mesh = new THREE.Mesh();
-  public lineMesh?: THREE.Line;
 
   public static verticalOffset = 160;
   public static horizontalOffset = 80;
   public static originPosition = new THREE.Vector3(0, 400, 0);
-  // private _onUpdate: VisitNodeFunction
-  constructor(node: BasicTreeNode, font: THREE.Font) {
+
+  constructor(node: BasicTreeNode, font: THREE.Font, map?: Map<number, BasicNodeViewobject>) {
     super();
     this.node = node;
+    this._viewObjectMap = map;
     this.getSphereNode();
     this.getTextMesh(node.key, font);
     this.add(this.nodeMesh);
@@ -31,14 +34,21 @@ export default class BasicNodeViewobject extends THREE.Object3D {
   }
 
   public getParentPosition() {
-    const gp = (node?: BasicTreeNode) => node && node.parent && node.parent.userData.position;
+    const gp = (node?: BasicTreeNode) => {
+      if (node && node.parent && this._viewObjectMap) {
+        const parentVo = this._viewObjectMap.get(node.parent.key);
+        if (parentVo) {
+          return parentVo.position;
+        }
+      }
+      return node && node.parent && node.parent.userData.position;
+    }
     return gp(this.cloneNode) || gp(this.node);
   }
 
   public getNodePosition(): THREE.Vector3 {
     const node = this.node;
-    const position = BasicNodeViewobject.getChildPosition(node, this.getParentPosition());
-    node.userData.position = position;
+    const position = BasicNodeViewobject.getChildPosition(this.cloneNode || node, this.getParentPosition());
     return position;
   }
 
@@ -89,9 +99,6 @@ export default class BasicNodeViewobject extends THREE.Object3D {
   public updatePosition(position: THREE.Vector3) {
     this.position.copy(position);
     this.node.userData.position = position;
-    if (this.cloneNode) {
-      this.cloneNode.userData.position = position;
-    }
     this.refreshLineMesh();
   }
 
@@ -109,7 +116,7 @@ export default class BasicNodeViewobject extends THREE.Object3D {
     }
   }
 
-  public static getChildPosition(rbNode: BasicTreeNode, parentPosition: THREE.Vector3) {
+  public static getChildPosition(rbNode: BasicTreeNode, parentPosition?: THREE.Vector3) {
     if (!parentPosition) {
       return BasicNodeViewobject.originPosition;
     } else {

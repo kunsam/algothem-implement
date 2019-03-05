@@ -22,18 +22,14 @@ export default class RotatedAnimator extends AnimatorBase {
     super(node, viewObject, duration);
     this._viewObjectMap = map;
     this._dirtyType = dirtyType;
-    this._addCloneNode();
     if (!duration) {
       this.duration = 40;
     }
+    this._bindCloneNode();
   }
 
-  private _addCloneNode() {
-    const vo = this._viewObjectMap.get(this._node.key);
-    if (vo) {
-      this._node.userData.position = vo.position;
-      this._viewObject.cloneNode = this._node;
-    }
+  private _bindCloneNode() {
+    // this._viewObject.cloneNode = this._node;
   }
 
   private _rotateNode(node: BasicTreeNode, dirtyDirection: NodeDirtyType, isOriginChild?: boolean) {
@@ -72,9 +68,9 @@ export default class RotatedAnimator extends AnimatorBase {
     const newPosition = new THREE.Vector3(x, y, nodeViewObject.position.z);
     // nodeViewObject 里的oarent
     nodeViewObject.updatePosition(newPosition);
-    if (this.currentFrame === 0) {
-      console.log(newPosition, nodeViewObject.node, 'nodeViewObjectnodeViewObject')
-    }
+    // if (this.currentFrame === 0) {
+    //   console.log(newPosition, nodeViewObject, 'nodeViewObjectnodeViewObject')
+    // }
     this._addText(node.key);
   }
 
@@ -163,6 +159,7 @@ export default class RotatedAnimator extends AnimatorBase {
       return true;
     } else if (this.currentFrame >= this.duration) {
       this._initRotateInfoMap.clear();
+      this._viewObject.cloneNode = undefined;
       this._resetText();
     }
     return false;
