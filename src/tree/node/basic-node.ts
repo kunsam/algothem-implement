@@ -4,7 +4,7 @@ import { NodeDirtyType, NodeDirtyDataGroup, GlobalNodeDirtyFlows } from './../..
 
 
 export type NBasicTreeNode = BasicTreeNode | null;
-export type VisitNodeFunction = (node: BasicTreeNode) => void;
+export type VisitNodeFunction = (node: BasicTreeNode) => boolean | undefined;
 
 // 应该再封装一个
 export class BasicTreeNode {

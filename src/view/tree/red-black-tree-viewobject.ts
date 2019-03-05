@@ -1,102 +1,42 @@
-
+import { AppEventType } from './../../core/event-manager';
 import { message } from 'antd';
-import * as THREE from 'three';
 import 'antd/lib/message/style/index.css';
 import FontManager from '../font/font-manager';
 import AnimatorBase from './animator/animator-base';
+import AddNodeAnimator from './animator/add-animator';
 import { RBNode } from '../../tree/node/red-black-node';
 import { RedBlackTree } from '../../tree/red-black-tree';
-import { App } from './../../../layouts/app/app-interface';
-import { BasicTreeNode } from './../../tree/node/basic-node';
-import { RBNodeDirtyType } from './../../tree/node/red-black-node';
-import RedBlackNodeViewObject from './node/red-black-node-viewobject';
-import { IRedBlackTreeEventType } from './../../../pages/tree/red-black-tree';
-import { GlobalNodeDirtyFlows, NodeDirtyType } from './global-node-dirty-flows';
-import RotatedAnimator from './animator/rotated-animator';
 import SwapKeyAnimator from './animator/swapkey-animator';
+import RotatedAnimator from './animator/rotated-animator';
+import { App } from './../../../layouts/app/app-interface';
 import DeleteNodeAnimator from './animator/delete-animator';
 import ShowTextAnimator from './animator/show-text-animator';
 import RecolorNodeAnimator from './animator/recolor-animator';
-import VisitedNodeAnimator from './animator/visited-node-animator';
-import AddNodeAnimator from './animator/add-animator';
 import BasicNodeViewobject from './node/basic-node-viewobject';
+import { BinaryTreeViewObject } from './binary-tree-viewobject';
+import VisitedNodeAnimator from './animator/visited-node-animator';
+import { RBNodeDirtyType } from './../../tree/node/red-black-node';
+import RedBlackNodeViewObject from './node/red-black-node-viewobject';
+import { GlobalNodeDirtyFlows, NodeDirtyType } from './global-node-dirty-flows';
 
 
+export class RedBlackTreeViewObject extends BinaryTreeViewObject {
 
-
-export class RedBlackTreeViewObject extends THREE.Object3D {
-
-  public tree: RedBlackTree;
-  private _app: App;
-  private _animatorFlows: AnimatorBase[][] = [];
-  private _nodeViewObjectMap: Map<number, RedBlackNodeViewObject> = new Map();
-  private _currentAcitiveAnimators?: Set<number>;
-  private _enterAnimating: boolean = false;
   private __maxDepthViewObject?: RedBlackNodeViewObject;
 
   constructor(app: App, tree: RedBlackTree) {
-    super();
-    this._app = app;
-    this.tree = tree;
-    tree.levelOrderTraverse((node: BasicTreeNode) => {
-      this.addNode(node as RBNode);
-    });
+    super(app, tree);
   }
 
-  public addNode(node: RBNode) {
-    if (!this._nodeViewObjectMap.has(node.key)) {
-      const viewObject = new RedBlackNodeViewObject(
-        node,
-        FontManager.getFont('helv'),
-        this._nodeViewObjectMap,
-      );
-      this._nodeViewObjectMap.set(node.key, viewObject);
-      this.add(viewObject);
-    }
+  public getNewViewObject(node: RBNode) {
+    return new RedBlackNodeViewObject(
+      node,
+      FontManager.getFont('helv'),
+      this._nodeViewObjectMap,
+    );
   }
 
-  private _resetAnimatorQueue() {
-    this._animatorFlows.shift();
-    this._currentAcitiveAnimators = undefined;
-  }
-
-  public update() {
-    // 这里的写法有问题，应该先操作，然后标记对应的节点，按照顺序执行节点动画
-    // [ [ ...node], [], []]，前一组执行完才执行下一组
-    if (this._animatorFlows.length) {
-      this._enterAnimating = true;
-      this._animatorFlows.forEach((animators, index) => {
-        if (index === 0) {
-          if (!animators.length) {
-            this._resetAnimatorQueue();
-          } else {
-            if (!this._currentAcitiveAnimators) {
-              this._currentAcitiveAnimators = new Set();
-              animators.forEach((_, index) => this._currentAcitiveAnimators!.add(index));
-            }
-            animators.forEach((animator, index) => {
-              const isAnimating = animator.animate();
-              if (!isAnimating) {
-                this._currentAcitiveAnimators!.delete(index);
-                if (this._currentAcitiveAnimators!.size === 0) {
-                  this._resetAnimatorQueue();
-                }
-              }
-            });
-          }
-        }
-      });
-    } else {
-      if (this._enterAnimating) {
-        message.info('Operation Done!', 0.8);
-        this._enterAnimating = false;
-        this._app.eventManager.emit(IRedBlackTreeEventType.operationDone);
-        GlobalNodeDirtyFlows.reset();
-      }
-    }
-  }
-
-  private _dityFlowsAnimationFlow() {
+  protected _dityFlowsAnimationFlow() {
     const logs: any[] = [];
     this._animatorFlows = [];
     const dirtyNodesFlows = GlobalNodeDirtyFlows.dirtyFlows;
@@ -185,11 +125,14 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
             if (info.data.key !== undefined) {
               const viewobject = this._nodeViewObjectMap.get(info.data.key);
               if (viewobject) {
+                const self = this;
                 animators.push(new DeleteNodeAnimator(
                   new RBNode(info.data.key),
                   viewobject,
+                  () => {
+                    self.deleteNode(info.data.key);
+                  }
                 ));
-                this._nodeViewObjectMap.delete(info.data.key);
               }
             }
             break;
@@ -200,7 +143,7 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
                 info.node,
                 new BasicNodeViewobject(info.node, FontManager.getFont('helv')),
                 () => {
-                  const trueNode = this.tree.search(info.node!.key);
+                  const trueNode = (this.tree as RedBlackTree).search(info.node!.key);
                   if (trueNode) {
                     this.addNode(trueNode as RBNode);
                     const vo =this._nodeViewObjectMap.get(trueNode.key);
@@ -224,36 +167,45 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
     console.log(logs, this._animatorFlows.map(c => c), 'log')
   }
 
+  public get rtree() {
+    return this.tree as RedBlackTree;
+  }
+
   public insert(key: number) {
     GlobalNodeDirtyFlows.reset();
-    if (this.tree.search(key)) {
+    if (this.rtree.search(key)) {
       message.error(`${key}已存在!`, 0.8)
-      this._app.eventManager.emit(IRedBlackTreeEventType.operationDone);
+      this._app.eventManager.emit(AppEventType.operationDone);
       return;
     }
-    this.tree.insert(key);
+    this.rtree.insert(key);
     this._dityFlowsAnimationFlow();
     this.__maxDepthViewObject = undefined;
   }
 
   public delete(key: number) {
     GlobalNodeDirtyFlows.reset();
-    if (!this.tree.root) {
-      this._app.eventManager.emit(IRedBlackTreeEventType.operationDone);
+    if (!this.rtree.root) {
+      this._app.eventManager.emit(AppEventType.operationDone);
       message.error('不存在树', 0.8);
       return;
     }
-    this.tree.delete(key);
+    this.rtree.delete(key);
+    GlobalNodeDirtyFlows.addToDirtyFlows([{
+      node: null,
+      data: { key },
+      dirtyType: NodeDirtyType.deleted,
+    }])
     this._dityFlowsAnimationFlow();
     this.__maxDepthViewObject = undefined;
   }
 
   public search(key: number) {
     GlobalNodeDirtyFlows.reset();
-    const findNode = this.tree.search(key, true);
+    const findNode = this.rtree.search(key, true);
     if (!findNode) {
       message.error(`${key}不存在!`, 0.8);
-      this._app.eventManager.emit(IRedBlackTreeEventType.operationDone);
+      this._app.eventManager.emit(AppEventType.operationDone);
     } else {
       this._dityFlowsAnimationFlow();
     }
@@ -263,7 +215,7 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
     if (this.__maxDepthViewObject) {
       return this.__maxDepthViewObject;
     }
-    const data = this.tree.getMaxDepthNode();
+    const data = this.rtree.getMaxDepthNode();
     if (data.node) {
       this.__maxDepthViewObject = this._nodeViewObjectMap.get(data.node.key);
       return this.__maxDepthViewObject;

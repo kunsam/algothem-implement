@@ -42,25 +42,12 @@ export class RedBlackTree extends BinarySearchTree {
 
   public delete(key: number) {
     if (this.root === null) return;
-    GlobalNodeDirtyFlows.reset();
     const node = this.search(key, true);
     if (!node) return null;
     this._deleteNode(node);
   }
 
-  private _rotateLeft(node: NRBNode) {
-    if (!node) return node;
-    const props = { node, root: this.root };
-    BinarySearchTreeUtil.transformUtil().rotateLeft({ node, root: this.root });
-    this.root = props.root;
-  }
 
-  private _rotateRight(node: NRBNode) {
-    if (!node) return node;
-    const props = { node, root: this.root };
-    BinarySearchTreeUtil.transformUtil().rotateRight(props);
-    this.root = props.root;
-  }
 
   private _swapColor(node1: NRBNode, node2: NRBNode) {
     if (node1 === null || node2 === null) {
@@ -77,11 +64,9 @@ export class RedBlackTree extends BinarySearchTree {
     if (node1 === null || node2 === null) {
       return;
     }
-  
     const temp = node1.key;
     node1.key = node2.key;
     node2.key = temp;
-
     GlobalNodeDirtyFlows.addToDirtyFlows([{
       node: cloneDeep(node1),
       dirtyType: NodeDirtyType.swapKey,
@@ -129,12 +114,12 @@ export class RedBlackTree extends BinarySearchTree {
         } else {
           /* Case : 2 node is right child of its parent Left-rotation required */
           if (node === parent.right) {
-            this._rotateLeft(parent);
+            this.rotateLeft(parent);
             node = parent; 
             parent = node && node.parent || null;
           }
           /* Case : 3  node is left child of its parent Right-rotation required */
-          this._rotateRight(grandParent);
+          this.rotateRight(grandParent);
           this._swapColor(parent, grandParent);
           node = parent; 
         }
@@ -151,12 +136,12 @@ export class RedBlackTree extends BinarySearchTree {
         } else {
           /* Case : 2 node is right child of its parent Left-rotation required */
           if (node === parent.left) { 
-            this._rotateRight(parent);
+            this.rotateRight(parent);
             node = parent; 
             parent = node && node.parent || null;
           }          
           /* Case : 3  node is left child of its parent Right-rotation required */
-          this._rotateLeft(grandParent); 
+          this.rotateLeft(grandParent); 
           this._swapColor(parent, grandParent);
           node = parent;
         }
@@ -169,7 +154,7 @@ export class RedBlackTree extends BinarySearchTree {
   }
 
   private _deleteNode(node: RBNode) {
-    const replaceNode = this._BSTreplace(node);
+    const replaceNode: NRBNode = this._BSTreplace(node) as NRBNode;
 
     GlobalNodeDirtyFlows.addToDirtyFlows([
       {
@@ -187,6 +172,7 @@ export class RedBlackTree extends BinarySearchTree {
     const areBothBlack = (replaceNode === null || replaceNode.color === RBColor.black) &&
       (node.color === RBColor.black);
 
+    const sibling: NRBNode = node.sibling as NRBNode;
     // NOTICE replaceNode 选择不同会导致结果不同 也可以选择 predesuccor
     if (replaceNode === null) {
        // node is a leaf
@@ -196,9 +182,9 @@ export class RedBlackTree extends BinarySearchTree {
         if (areBothBlack) {
           this._fixDoubleBlack(node);
         } else {
-          if (node.sibling) {
-            node.sibling.dirty = true;
-            node.sibling.color = RBColor.red;
+          if (sibling) {
+            sibling.dirty = true;
+            sibling.color = RBColor.red;
           }
         }
         if (node.parent) {
@@ -257,9 +243,9 @@ export class RedBlackTree extends BinarySearchTree {
         node.sibling.color = RBColor.black;
         GlobalNodeDirtyFlows.endSequence();
         if (node.sibling.isOnLeft()) {
-          this._rotateRight(parent);
+          this.rotateRight(parent);
         } else {
-          this._rotateLeft(parent);
+          this.rotateLeft(parent);
         }
         this._fixDoubleBlack(node);
       } else {
@@ -270,24 +256,24 @@ export class RedBlackTree extends BinarySearchTree {
               node.sibling.left.color = node.sibling.color;
               node.sibling.color = parent.color;
               GlobalNodeDirtyFlows.endSequence();
-              this._rotateRight(parent);
+              this.rotateRight(parent);
             } else {
               node.sibling.left.color = parent.color;
-              this._rotateRight(node.sibling);
-              this._rotateLeft(parent);
+              this.rotateRight(node.sibling);
+              this.rotateLeft(parent);
             }
           } else {
             if (node.sibling.isOnLeft()) {
               node.sibling.right!.dirty = true;
               node.sibling.right!.color = parent.color;
-              this._rotateLeft(node.sibling);
-              this._rotateRight(parent);
+              this.rotateLeft(node.sibling);
+              this.rotateRight(parent);
             } else {
               GlobalNodeDirtyFlows.startSequence();
               node.sibling.right!.color = node.sibling.color;
               node.sibling.color = parent.color;
               GlobalNodeDirtyFlows.endSequence();
-              this._rotateLeft(parent);
+              this.rotateLeft(parent);
             }
           }
           parent!.dirty = true;

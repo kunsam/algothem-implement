@@ -1,6 +1,8 @@
+
 import Stack from '../stack/stack';
 import Queue from '../queue/queue';
 import BasicBinaryTreeUtil from './basic-binary-tree-util';
+import { BinarySearchTreeUtil } from './binary-search-tree-util';
 import { BasicTreeNode, NBasicTreeNode, VisitNodeFunction } from './node/basic-node';
 
 
@@ -16,12 +18,38 @@ export class BasicBinaryTree {
   constructor(root?: NBasicTreeNode) {
     this.root = root === undefined ? null : root;
   }
-  public insert(key: number) {
-    this.root = BasicBinaryTreeUtil.insert(key, this.root);
+  public insert(key: number, saveDirtyFlows?: boolean) {
+    this.root = BasicBinaryTreeUtil.insert(key, this.root, saveDirtyFlows);
   }
 
   public delete(key: number) {
     this.root = BasicBinaryTreeUtil.delete(key, this.root);
+  }
+
+  public search(key: number): NBasicTreeNode {
+    let result: NBasicTreeNode = null;
+    this.levelOrderTraverse((node) => {
+      if (node.key === key) {
+        result = node;
+        return true;
+      }
+      return undefined;
+    });
+    return result;
+  }
+
+  public rotateLeft(node: NBasicTreeNode) {
+    if (!node) return node;
+    const props = { node, root: this.root };
+    BinarySearchTreeUtil.transformUtil().rotateLeft({ node, root: this.root });
+    this.root = props.root;
+  }
+
+  public rotateRight(node: NBasicTreeNode) {
+    if (!node) return node;
+    const props = { node, root: this.root };
+    BinarySearchTreeUtil.transformUtil().rotateRight(props);
+    this.root = props.root;
   }
 
   public inorder(node: NBasicTreeNode) {
@@ -50,14 +78,16 @@ export class BasicBinaryTree {
   public levelOrder() {
     return this.levelOrderTraverse((node) => {
       console.log('node key:', node.key);
+      return undefined;
     });
   }
 
   public levelOrderTraverse(callback: VisitNodeFunction) {
     const queue = new Queue();
     let tempNode = this.root;
-    while(tempNode) {
-      callback(tempNode);
+    let isStop = false;
+    while(tempNode && !isStop) {
+      isStop = !!callback(tempNode);
       if (tempNode.left) {
         queue.Enqueue(tempNode.left)
       }

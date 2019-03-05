@@ -18,7 +18,6 @@ export enum IRedBlackTreeEventType{
   onInsert = 'ONINSERT',
   onDelete = 'onDelete',
   onLeftRotate = 'onLeftRotate',
-  operationDone = 'OperationDone',
   onRightRotate = 'onRightRotate',
 }
 

@@ -10,7 +10,9 @@ export class BinarySearchTree extends BasicBinaryTree {
   }
 
   public insert(key: number) {
-    this.root = BinarySearchTreeUtil.insert({ key, root: this.root });
+    const props = { key, root: this.root };
+    BinarySearchTreeUtil.insert(props);
+    this.root = props.root;
   }
 
   public delete(key: number) {

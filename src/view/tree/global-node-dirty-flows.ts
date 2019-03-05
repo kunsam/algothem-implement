@@ -67,10 +67,10 @@ export class GlobalNodeDirtyFlows {
     flow.forEach(pair => {
       switch (pair.dirtyType) {
         case NodeDirtyType.deleted: {
-          if (pair.node) {
+          if (pair.data.key !== undefined) {
             result.push({
               node: null,
-              data: { key: pair.node.key, type: NodeDirtyType.deleted },
+              data: { key: pair.data.key, type: NodeDirtyType.deleted },
             });
           }
           break;
@@ -170,11 +170,13 @@ export class GlobalNodeDirtyFlows {
         }
       }
     });
-    GlobalNodeDirtyFlows.dirtyFlows.push({
-      flow: result,
-      flowInfo: {
-        name: name || 'new-flow',
-      }
-    });
+    if (result.length) {
+      GlobalNodeDirtyFlows.dirtyFlows.push({
+        flow: result,
+        flowInfo: {
+          name: name || 'new-flow',
+        }
+      });
+    }
   }
 }

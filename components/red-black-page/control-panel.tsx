@@ -1,8 +1,10 @@
+
 import * as React from 'react'
 import './control-panel.less';
 import { App } from '../../layouts/app/app-interface';
 import { ButtonInputPair } from '../button-input-pair/button-input-pair';
 import { IRedBlackTreeEventType } from '../../pages/tree/red-black-tree';
+import { AppEventType } from '../../src/core/event-manager';
 
 
 export class ControlPanel extends React.Component<{ app: App }, {
@@ -26,7 +28,7 @@ export class ControlPanel extends React.Component<{ app: App }, {
 
   componentDidMount() {
     if (this.props.app) {
-      this.props.app.eventManager.listen(IRedBlackTreeEventType.operationDone, this.onOperationDone.bind(this));
+      this.props.app.eventManager.listen(AppEventType.operationDone, this.onOperationDone.bind(this));
     }
   }
 

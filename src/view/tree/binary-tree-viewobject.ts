@@ -30,6 +30,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     this.tree = tree;
     tree.levelOrderTraverse((node: BasicTreeNode) => {
       this.addNode(node);
+      return undefined;
     });
   }
 
@@ -47,6 +48,16 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       const viewObject = this.getNewViewObject(node);
       this._nodeViewObjectMap.set(node.key, viewObject);
       this.add(viewObject);
+    }
+  }
+
+  protected deleteNode(key: number) {
+    if (this._nodeViewObjectMap.has(key)) {
+      const vo = this._nodeViewObjectMap.get(key);
+      if (vo) {
+        this.remove(vo);
+        this._nodeViewObjectMap.delete(key);
+      }
     }
   }
   
@@ -82,7 +93,6 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       });
     } else {
       if (this._enterAnimating) {
-        message.info('Operation Done!', 0.8);
         this._enterAnimating = false;
         this._app.eventManager.emit(AppEventType.operationDone);
         GlobalNodeDirtyFlows.reset();
@@ -90,7 +100,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     }
   }
 
-  private _dityFlowsAnimationFlow() {
+  protected _dityFlowsAnimationFlow() {
     const logs: any[] = [];
     this._animatorFlows = [];
     const dirtyNodesFlows = GlobalNodeDirtyFlows.dirtyFlows;
@@ -102,4 +112,41 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       });
     });
   }
+
+  public insert(key: number) {
+    
+    GlobalNodeDirtyFlows.reset();
+    this.tree.insert(key,);
+
+    console.log(GlobalNodeDirtyFlows.dirtyFlows, 'GlobalNodeDirtyFlows')
+    // this.addNode(key);
+  }
+
+  public delete(key: number) {
+    this.tree.delete(key);
+    this.deleteNode(key);
+  }
+
+  public leftRotate(key: number) {
+    GlobalNodeDirtyFlows.reset();
+    const node = this.tree.search(key);
+    if (!node) {
+      message.error('Not Found node', 0.8);
+    } else {
+      this.tree.rotateLeft(node);
+    }
+    console.log(GlobalNodeDirtyFlows.dirtyFlows, 'GlobalNodeDirtyFlows')
+  }
+
+  public rightRotate(key: number) {
+    GlobalNodeDirtyFlows.reset();
+    const node = this.tree.search(key);
+    if (!node) {
+      message.error('Not Found node', 0.8);
+    } else {
+      this.tree.rotateLeft(node);
+    }
+    console.log(GlobalNodeDirtyFlows.dirtyFlows, 'GlobalNodeDirtyFlows')
+  }
+
 }

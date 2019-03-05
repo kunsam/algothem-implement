@@ -11,6 +11,8 @@ import { RedBlackTree } from '../../src/tree/red-black-tree';
 import { ControlPanel } from '../../components/red-black-page/control-panel';
 import { RedBlackTreeViewObject } from '../../src/view/tree/red-black-tree-viewobject';
 import { AppEventType } from '../../src/core/event-manager';
+import { BinaryTreeViewObject } from '../../src/view/tree/binary-tree-viewobject';
+import { BinarySearchTree } from '../../src/tree/binary-search-tree';
 
 
 export enum IBasicTreeEventType{
@@ -18,36 +20,31 @@ export enum IBasicTreeEventType{
   onInsert = 'ONINSERT',
   onDelete = 'onDelete',
   onLeftRotate = 'onLeftRotate',
-  operationDone = 'OperationDone',
   onRightRotate = 'onRightRotate',
 }
 
 export class BinaryTreePage extends React.Component<{app: App}> {
-  public _redBlackTreeViewObject: RedBlackTreeViewObject | undefined;
+  public treeViewObject: BinaryTreeViewObject | undefined;
 
-  public initEvent(redBlackTreeViewObject: RedBlackTreeViewObject) {
+  public initEvent(treeViewObject: BinaryTreeViewObject) {
     if (!this.props.app.canvas) {
       throw new Error('this.props.app.canvas')
     }
 
     const eventManager = this.props.app.eventManager;
     eventManager.listen(IBasicTreeEventType.onInsert, (key: number) => {
-      redBlackTreeViewObject.insert(key);
+      treeViewObject.insert(key);
     });
     eventManager.listen(IBasicTreeEventType.onDelete, (key: number) => {
-      redBlackTreeViewObject.delete(key);
+      // treeViewObject.delete(key);
     });
     eventManager.listen(IBasicTreeEventType.onFind, (key: number) => {
-      redBlackTreeViewObject.search(key);
+      // treeViewObject.search(key);
     });
 
-    const { grhelper, renderer, camera } = this.props.app.canvas;
+    const { renderer, camera } = this.props.app.canvas;
     eventManager.listen(AppEventType.renderFrame, () => {
-      redBlackTreeViewObject.update();
-      const maxDepthViewObject = redBlackTreeViewObject.getMaxDepthNodeViewObject();
-      if (maxDepthViewObject) {
-        grhelper.position.y = maxDepthViewObject.position.y - 200;
-      }
+      treeViewObject.update();
     });
 
     const raycaster = new THREE.Raycaster();
@@ -57,8 +54,8 @@ export class BinaryTreePage extends React.Component<{app: App}> {
         x: ( e.clientX / window.innerWidth ) * 2 - 1,
         y: - ( e.clientY / window.innerHeight ) * 2 + 1,
       }, camera );
-      if (redBlackTreeViewObject.children) {
-        const intersects = raycaster.intersectObjects( redBlackTreeViewObject.children, true );
+      if (treeViewObject.children) {
+        const intersects = raycaster.intersectObjects( treeViewObject.children, true );
         const findNode = intersects.find(i => i.object.userData.node);
         if (findNode && findNode.object.userData.node) {
           const node = findNode.object.userData.node as RBNode;
@@ -73,20 +70,20 @@ export class BinaryTreePage extends React.Component<{app: App}> {
 
   public initTree(app: App, canvas: AppCanvas) {
 
-    const redblacktree = new RedBlackTree();
-    redblacktree.insert(50);
-    redblacktree.insert(30);
-    redblacktree.insert(42);
-    redblacktree.insert(20);
-    redblacktree.insert(18);
-    redblacktree.insert(26);
-    redblacktree.insert(50);
-    redblacktree.insert(82);
+    const tree = new BinarySearchTree();
+    tree.insert(50);
+    tree.insert(30);
+    tree.insert(42);
+    tree.insert(20);
+    tree.insert(18);
+    tree.insert(26);
+    tree.insert(50);
+    tree.insert(82);
 
     FontManager.getFontAsync('helv').then(() => {
-      this._redBlackTreeViewObject = new RedBlackTreeViewObject(app, redblacktree);
-      canvas.scene.add(this._redBlackTreeViewObject);
-      this.initEvent(this._redBlackTreeViewObject);
+      this.treeViewObject = new BinaryTreeViewObject(app, tree);
+      canvas.scene.add(this.treeViewObject);
+      this.initEvent(this.treeViewObject);
     });
 
   }
@@ -106,7 +103,7 @@ export class BinaryTreePage extends React.Component<{app: App}> {
  }
 
 
-export default class RedBlackTreeContainer extends React.Component<any, { app?: App }> {
+export default class BinaryTreeContainer extends React.Component<any, { app?: App }> {
 
   constructor(props: any) {
     super(props);
@@ -123,7 +120,7 @@ export default class RedBlackTreeContainer extends React.Component<any, { app?: 
               <div id="control-header" style={{ position: 'fixed' }}>
                 <ControlPanel app={app} />
               </div>
-              <RedBlackTreePage app={app} />
+              <BinaryTreePage app={app} />
             </div>
           ) : null
         }

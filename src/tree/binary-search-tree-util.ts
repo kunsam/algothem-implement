@@ -349,7 +349,8 @@ export class BinarySearchTreeUtil{
         { node: root, dirtyType: NodeDirtyType.visited }
       ], 'BinarySearchTreeUtil.inorderTraverse');
       BinarySearchTreeUtil.inorderTraverse(root.left, callBack);
-      callBack(root);
+      const isStop = !!callBack(root);
+      if (isStop) return;
       BinarySearchTreeUtil.inorderTraverse(root.right, callBack);
     } 
   }

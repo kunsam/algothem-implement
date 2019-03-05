@@ -101,10 +101,11 @@ export default class BasicBinaryTreeUtil {
         });
       }
     }
-
-    while(current !== null) {
+    
+    let isStop = false;
+    while(current !== null && !isStop) {
       if (current.left === null) {
-        callBack(current);
+        isStop = !!callBack(current);
         addToVisitFlows(current);
         current = current.right;
       } else {
@@ -128,7 +129,7 @@ export default class BasicBinaryTreeUtil {
           current = current.left;
         } else {
           pre.right = null;
-          callBack(current);
+          isStop = !!callBack(current);
           addToVisitFlows(current);
           current = current.right;
         }
@@ -197,12 +198,6 @@ export default class BasicBinaryTreeUtil {
       GlobalNodeDirtyFlows.startSequence();
       node.left.left = node.right;
       node.left.right = node;
-      // GlobalNodeDirtyFlows.addToDirtyFlows([
-      //   { node: node.right, dirtyType: NodeDirtyType.deleted },
-      //   { node: node.left, dirtyType: NodeDirtyType.deleted },
-      //   { node: node.left.left, dirtyType: NodeDirtyType.changeNode },
-      //   { node: node.left.right, dirtyType: NodeDirtyType.changeNode },
-      // ], 'flipBinaryTreeRecurively');
     }
     node.left = null;
     node.right = null;
