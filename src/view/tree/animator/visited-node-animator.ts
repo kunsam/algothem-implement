@@ -1,26 +1,30 @@
+import { BasicTreeNode } from './../../../tree/node/basic-node';
 import * as THREE from 'three';
 import AnimatorBase from "./animator-base";
-import { RBNode } from "../../../tree/red-black-tree";
+import BasicNodeViewobject from '../node/basic-node-viewobject';
+
 
 export default class VisitedNodeAnimator extends AnimatorBase {
-  private _mesh: THREE.Mesh;
   private _oldColor?: THREE.Color;
 
-  constructor(node: RBNode, mesh: THREE.Mesh, duration?: number) {
-    super(node, duration);
-    this._mesh = mesh;
+  constructor(node: BasicTreeNode, viewObject: BasicNodeViewobject, duration?: number) {
+    super(node, viewObject, duration);
   }
 
   private _changeColor() {
     if (!this._oldColor) {
-      this._oldColor = this._mesh.material.color;
-      this._mesh.material.color = new THREE.Color(0x00ff00);
+      const material = this._viewObject.nodeMesh.material;
+      if (material instanceof THREE.MeshPhongMaterial) {
+        this._oldColor = material.color;
+        material.color = new THREE.Color(0x00ff00);
+      }
     }
   }
 
   private _resetColor() {
     if (this._oldColor) {
-      this._mesh.material.color = this._oldColor;
+      const material = this._viewObject.nodeMesh.material;
+      material.color = this._oldColor;
     }
   }
   

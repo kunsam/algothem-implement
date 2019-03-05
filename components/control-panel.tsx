@@ -140,7 +140,7 @@ export class ControlPanel extends React.Component<{ app: App }, {
           onConfirm={this.onConfirmFind.bind(this)}
           onInputChange={() => {}}
         />
-        <ButtonInputPair
+        {/* <ButtonInputPair
           label="左旋"
           disabled={this.state.operating}
           onConfirm={this.onConfirmLeftRotate.bind(this)}
@@ -151,7 +151,7 @@ export class ControlPanel extends React.Component<{ app: App }, {
           disabled={this.state.operating}
           onConfirm={this.onConfirmRightRotate.bind(this)}
           onInputChange={() => {}}
-        />
+        /> */}
 
       </div>
     )

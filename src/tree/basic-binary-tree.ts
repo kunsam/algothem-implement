@@ -1,18 +1,7 @@
-import Queue from "../queue/queue";
-import Stack from "../stack/stack";
-
-
-export type NNode = Node | null;
-
-export class Node {
-  public key: number;
-  public left: NNode;
-  public right: NNode;
-  constructor(key: number) {
-    this.key = key;
-    this.left = this.right = null;
-  }
-}
+import Stack from '../stack/stack';
+import Queue from '../queue/queue';
+import BasicBinaryTreeUtil from './basic-binary-tree-util';
+import { BasicTreeNode, NBasicTreeNode, VisitNodeFunction } from './node/basic-node';
 
 
 export interface IBasicBinaryTree {
@@ -22,85 +11,27 @@ export interface IBasicBinaryTree {
 }
 
 export class BasicBinaryTree {
-  public root: Node;
+  public root: NBasicTreeNode;
 
-  constructor(rootKey: number) {
-    this.root = new Node(rootKey);
+  constructor(root?: NBasicTreeNode) {
+    this.root = root === undefined ? null : root;
+  }
+  public insert(key: number) {
+    this.root = BasicBinaryTreeUtil.insert(key, this.root);
   }
 
-  public insert(key: number, node?: Node) {
-    const queue = new Queue();
-    queue.push(node || this.root); 
-
-    let temp: Node;
-    while (!queue.empty()) { 
-      temp = queue.pop(); 
-      if (!temp.left) { 
-          temp.left = new Node(key); 
-          break; 
-      } else queue.push(temp.left); 
-
-      if (!temp.right) { 
-          temp.right = new Node(key); 
-          break; 
-      } else queue.push(temp.right); 
-    } 
+  public delete(key: number) {
+    this.root = BasicBinaryTreeUtil.delete(key, this.root);
   }
 
-  // https://www.geeksforgeeks.org/deletion-binary-tree/
-  public delete(key: number, node?: Node) {
-    let keyNode: NNode;
-    const queue = new Queue();
-
-    const nodeRoot = node || this.root;
-    queue.push(nodeRoot);
-
-    let temp: Node;
-    while (!queue.empty()) { 
-      temp = queue.pop();
-      if (temp.key === key) keyNode = temp; 
-      if (temp.left) queue.push(temp.left); 
-      if (temp.right) queue.push(temp.right);
-    }
-    if (keyNode) {
-      const x = temp.key;
-      this._deletDeepest(nodeRoot, temp); 
-      keyNode.key = x; 
-    }
-  }
-
-  private _deletDeepest(root: Node, deleteNode: Node) {
-    const queue = new Queue();
-    queue.push(root);
-
-    let temp: Node;
-    while(!queue.empty()) {
-      temp = queue.pop();
-      if (temp.right) { 
-        if (temp.right.key === deleteNode.key) { 
-            temp.right = null;
-            return;
-        } else queue.push(temp.right); 
-      }
-
-      if (temp.left) {
-        if (temp.left.key === deleteNode.key) { 
-            temp.left = null;
-            return;
-        } else queue.push(temp.left); 
-      }
-    }
-
-  }
-
-  public inorder(node: NNode) {
+  public inorder(node: NBasicTreeNode) {
     if (!node) return;
     this.inorder(node.left);
     console.log(node.key);
     this.inorder(node.right);    
   }
 
-  public iterativePreorder(root: NNode) {
+  public iterativePreorder(root: NBasicTreeNode) {
     if (root === null) return;
     const stack = new Stack();
     stack.push(root);
@@ -116,11 +47,17 @@ export class BasicBinaryTree {
     }
   }
 
-  public levelOrderTraverse(node: Node) {
+  public levelOrder() {
+    return this.levelOrderTraverse((node) => {
+      console.log('node key:', node.key);
+    });
+  }
+
+  public levelOrderTraverse(callback: VisitNodeFunction) {
     const queue = new Queue();
-    let tempNode = node;
+    let tempNode = this.root;
     while(tempNode) {
-      console.log(tempNode.key)
+      callback(tempNode);
       if (tempNode.left) {
         queue.Enqueue(tempNode.left)
       }
@@ -131,7 +68,7 @@ export class BasicBinaryTree {
     }
   }
 
-  public isMirror(node1: NNode, node2: NNode) {
+  public isMirror(node1: NBasicTreeNode, node2: NBasicTreeNode): boolean {
     if (node1 === null && node2 === null) return true;
 
     if (node1 && node2 && node1.key === node2.key) {
@@ -148,13 +85,13 @@ export class BasicBinaryTree {
 
 
 
-const root = new Node(10);
-root.left = new Node(11); 
-root.left.left = new Node(7); 
-root.left.right = new Node(12); 
-root.right = new Node(9); 
-root.right.left = new Node(15); 
-root.right.right = new Node(8); 
+const root = new BasicTreeNode(10);
+root.left = new BasicTreeNode(11); 
+root.left.left = new BasicTreeNode(7); 
+root.left.right = new BasicTreeNode(12); 
+root.right = new BasicTreeNode(9); 
+root.right.left = new BasicTreeNode(15); 
+root.right.right = new BasicTreeNode(8); 
 
 /*
            10

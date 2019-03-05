@@ -1,12 +1,10 @@
 
 import * as THREE from 'three';
 import AnimatorBase from "./animator-base";
-import { getConnectLineMesh } from '../mesh';
 import FontManager from '../../font/font-manager';
-import { RBNode } from "../../../tree/red-black-tree";
-import { NRBNode } from './../../../tree/red-black-tree';
-import { RBNodeDirtyType } from "../red-black-tree-viewobject";
-import { RBNodeViewObject, RedBlackTreeViewObject } from './../red-black-tree-viewobject';
+import { NodeDirtyType } from '../global-node-dirty-flows';
+import BasicNodeViewobject from '../node/basic-node-viewobject';
+import { BasicTreeNode, NBasicTreeNode } from './../../../tree/node/basic-node';
 
 
 export interface IRotateInfo{
@@ -15,50 +13,50 @@ export interface IRotateInfo{
 }
 
 export default class RotatedAnimator extends AnimatorBase {
-  private _dirtyType: RBNodeDirtyType;
-  private _viewObjectMap: Map<number, RBNodeViewObject>;
+  private _dirtyType: NodeDirtyType;
+  private _viewObjectMap: Map<number, BasicNodeViewobject>;
   private _textMap: Map<number, THREE.Mesh> = new Map();
   private _initRotateInfoMap: Map<number, IRotateInfo> = new Map();
 
-  constructor(node: RBNode, dirtyType: RBNodeDirtyType, map: Map<number, RBNodeViewObject>, duration?: number) {
-    super(node, duration);
+  constructor(node: BasicTreeNode, viewObject: BasicNodeViewobject, dirtyType: NodeDirtyType, map: Map<number, BasicNodeViewobject>, duration?: number) {
+    super(node, viewObject, duration);
     this._viewObjectMap = map;
     this._dirtyType = dirtyType;
+    this._addCloneNode();
     if (!duration) {
       this.duration = 40;
     }
   }
-  
-  private _rotateNode(node: RBNode, dirtyDirection: RBNodeDirtyType, isOriginChild?: boolean) {
+
+  private _addCloneNode() {
+    const vo = this._viewObjectMap.get(this._node.key);
+    if (vo) {
+      this._node.userData.position = vo.position;
+      this._viewObject.cloneNode = this._node;
+    }
+  }
+
+  private _rotateNode(node: BasicTreeNode, dirtyDirection: NodeDirtyType, isOriginChild?: boolean) {
     const nodeViewObject = this._viewObjectMap.get(node.key);
     if (!nodeViewObject) {
       return;
     }
-
-    nodeViewObject.mesh.children.forEach(child => {
-      if (child.userData.isConnectLine) {
-        nodeViewObject.mesh.remove(child);
-      }
-    });
-
-    const isLeftRotate = dirtyDirection === RBNodeDirtyType.leftRotated;
-
+    const isLeftRotate = dirtyDirection === NodeDirtyType.leftRotated;
     const radius = Math.sqrt(
-      Math.pow(RedBlackTreeViewObject.horizontalOffset / 2, 2) +
-      Math.pow(RedBlackTreeViewObject.verticalOffset / 2, 2)
+      Math.pow(BasicNodeViewobject.horizontalOffset / 2, 2) +
+      Math.pow(BasicNodeViewobject.verticalOffset / 2, 2)
     );
     const sign = isLeftRotate ? -1 : 1;
-
     let initInfo = this._initRotateInfoMap.get(node.key);
     if (!initInfo) {
       const childSign = isOriginChild ? -1 : 1;
-      const initCircleCenter = nodeViewObject.mesh.position.clone().sub(new THREE.Vector3(
-        -1 * sign * RedBlackTreeViewObject.horizontalOffset / 2,
-        childSign * RedBlackTreeViewObject.verticalOffset / 2,
+      const initCircleCenter = nodeViewObject.position.clone().sub(new THREE.Vector3(
+        -1 * sign * BasicNodeViewobject.horizontalOffset / 2,
+        childSign * BasicNodeViewobject.verticalOffset / 2,
         0,
       ));
       const distance = new THREE.Vector3().subVectors(
-        nodeViewObject.mesh.position,
+        nodeViewObject.position,
         initCircleCenter.clone().add(new THREE.Vector3(radius, 0, 0))
       ).length();
       let initAngle = childSign * Math.acos((2 * radius * radius - distance * distance) / (2 * radius * radius));
@@ -71,34 +69,16 @@ export default class RotatedAnimator extends AnimatorBase {
     const animateAngle = -1 * sign * this.currentFrame * Math.PI / this.duration;
     const x = initInfo.center.x + radius * Math.cos(animateAngle + initInfo.initAngle);
     const y = initInfo.center.y + radius * Math.sin(animateAngle + initInfo.initAngle);
-
-    const newPosition = new THREE.Vector3(x, y, nodeViewObject.mesh.position.z);
-    nodeViewObject.mesh.position.copy(newPosition);
-    node.userData.position = newPosition;
+    const newPosition = new THREE.Vector3(x, y, nodeViewObject.position.z);
+    // nodeViewObject 里的oarent
+    nodeViewObject.updatePosition(newPosition);
+    if (this.currentFrame === 0) {
+      console.log(newPosition, nodeViewObject.node, 'nodeViewObjectnodeViewObject')
+    }
     this._addText(node.key);
-    this._refreshNodeConnectLine(node);
   }
 
-  private _refreshNodeConnectLine(node: NRBNode) {
-    if (!node) {
-      return;
-    }
-    const nodeViewObject = this._viewObjectMap.get(node.key);
-    if(!nodeViewObject) {
-      return;
-    }
-    nodeViewObject.mesh.children.forEach(child => {
-      if (child instanceof THREE.Line) {
-        nodeViewObject.mesh.remove(child);
-      }
-    });
-    const line = getConnectLineMesh(nodeViewObject.mesh);
-    if (line) {
-      nodeViewObject.mesh.add(line);
-    }
-  }
-
-  private _keepChildTrack(node: NRBNode) {
+  private _keepChildTrack(node: NBasicTreeNode) {
     if (node === null) {
       return;
     }
@@ -110,10 +90,7 @@ export default class RotatedAnimator extends AnimatorBase {
     if (!parentViewObject || !nodeViewObject) {
       return;
     }
-    nodeViewObject.mesh.position.copy(
-      RedBlackTreeViewObject.getChildPosition(node, parentViewObject.mesh.position)
-    );
-    this._refreshNodeConnectLine(node);
+    nodeViewObject.refresh();
     if (node.left) {
       this._keepChildTrack(node.left);
     }
@@ -154,7 +131,7 @@ export default class RotatedAnimator extends AnimatorBase {
       return;
     }
     const textGeo = new THREE.TextGeometry(`${
-      this._dirtyType === RBNodeDirtyType.leftRotated ? 'Left-Rotating' : 'Right-Rotating'
+      this._dirtyType === NodeDirtyType.leftRotated ? 'Left-Rotating' : 'Right-Rotating'
     }`, {
       height: 0,
       size: 20,
@@ -166,26 +143,23 @@ export default class RotatedAnimator extends AnimatorBase {
     );
     text.position.y += 80;
     text.position.x += 60;
-    text.userData.isTextNode = true;
-    nodeViewObject.mesh.add(text);
-    this._textMap.set(nodeKey, nodeViewObject.mesh);
+    nodeViewObject.add(text);
+    this._textMap.set(nodeKey, text);
   }
 
   private _resetText() {
     this._textMap.forEach(pmesh => {
-      pmesh.children.forEach(child => {
-        if(child.userData.isTextNode) {
-          pmesh.remove(child);
-        }
-      })
+      if (pmesh.parent) {
+        pmesh.parent.remove(pmesh);
+      }
     });
     this._textMap.clear();
   }
 
   public animate() {
     if (this.currentFrame < this.duration) {
-      this.currentFrame++;
       this._rotate();
+      this.currentFrame++;
       return true;
     } else if (this.currentFrame >= this.duration) {
       this._initRotateInfoMap.clear();

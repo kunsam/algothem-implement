@@ -1,231 +1,92 @@
-
-import { cloneDeep } from 'lodash';
-import { Node } from './basic-binary-tree';
-import { TraversalHelper } from "../util/traversal-helper";
-import { RBNodeDirtyType } from '../view/tree/red-black-tree-viewobject';
  
-export enum RBColor {
-  red = 1,
-  black = 2,
-}
+import { cloneDeep } from 'lodash';
+import { VisitNodeFunction } from './node/basic-node';
+import { BinarySearchTree } from './binary-search-tree';
+import { BinarySearchTreeUtil } from './binary-search-tree-util';
+import { NRBNode, RBNode, RBColor } from './node/red-black-node';
+import { GlobalNodeDirtyFlows, NodeDirtyType } from './../view/tree/global-node-dirty-flows';
 
-export const RBCOLOR_HEX_TABLE = {
-  [RBColor.red]: 0xff0000,
-  [RBColor.black]: 0x000000,
-}
 
-export type NRBNode = RBNode | null;
-
-// visualization: https://www.cs.usfca.edu/~galles/visualization/RedBlack.html
-export class RBNode extends Node {
-  public parent: NRBNode;
-  public left: NRBNode;
-  public right: NRBNode;
-  public color: RBColor = RBColor.red;
-  public userData: any = {};
-  constructor(key: number) {
-    super(key);
-    this.left = this.right = this.parent = null;
-  }
-  public uncle(): NRBNode {
-    if (this.parent === null || this.parent.parent === null) {
-      return null;
-    }
-    return this.parent.isOnLeft() ? this.parent.parent.right : this.parent.parent.left;
-  }
-  public sibling(): NRBNode {
-    if (this.parent === null) {
-      return null;
-    }
-    return this.isOnLeft() ? this.parent.right : this.parent.left;
-  }
-  public leftmost(): RBNode {
-    let temp: RBNode = this;
-    while(temp.left) {
-      temp = temp.left;
-    }
-    return temp;
-  }
-
-  public rightmost(): RBNode {
-    let temp: RBNode = this;
-    while(temp.right) {
-      temp = temp.right;
-    }
-    return temp;
-  }
-
-  public isOnLeft(): boolean {
-    if (this.parent === null) {
-      return false;
-    }
-    return this === this.parent.left;
-  }
-
-  public hasChild() {
-    return (this.left !== null || this.right !== null)
-  }
-  public hasOneChild() {
-    return (this.left !== null && this.right === null) ||
-      (this.right !== null && this.left === null);
-  }
-  public hasTwoChild() {
-    return (this.left !== null && this.right !== null)
-  }
-
-  public hasRedChild() {
-    return (this.left !== null && this.left.color === RBColor.red) ||
-      (this.right !== null && this.right.color === RBColor.red);
-  }
-  public moveDownWithNewParent(nParent: RBNode) {
-    if (this.parent) {
-      if (this.isOnLeft()) {
-        this.parent.left = nParent;
-      } else {
-        this.parent.right = nParent;
-      }
-    }
-    nParent.parent = this.parent;
-    this.parent = nParent;
-  }
-}
-
-export interface RBNodeDirtyInfo{
-  data?: any;
-  node: NRBNode;
-  dirtyType: RBNodeDirtyType;
-}
 
 // 还可以实现的操作包括 join / union / difference
-export class RedBlackTree {
+export class RedBlackTree extends BinarySearchTree {
   public root: NRBNode;
-  public dirtyFlows: RBNodeDirtyInfo[][] = [];
-  private _traversalHelper: TraversalHelper;
-
-  constructor() {
-    this.root = null;
-    this._traversalHelper = new TraversalHelper();
+  constructor(root?: NRBNode) {
+    super(root);
+    this.root = root === undefined ? null : root;
+  }
+  public inorderTraverse(callback: VisitNodeFunction) {
+    BinarySearchTreeUtil.inorderTraverse(this.root, callback);
   }
 
-  public inorder() {
-    this._traversalHelper.inorder(this.root);
+  public insert(key: number) {
+    let addedNode: NRBNode = null;
+    const props = {
+      key,
+      root: this.root,
+      consturctNode: (key: number) => {
+        addedNode = new RBNode(key);
+        return addedNode;
+      },
+    };
+    BinarySearchTreeUtil.insert(props);
+    this.root = props.root;
+    if (addedNode) {
+      this._fix2RedBlack(addedNode);
+    }
   }
 
-  public inorderTraverse(callback: Function) {
-    this._traversalHelper.inorderTraverse(this.root, callback);
+  public search(key: number, isAddtoDirty?: boolean): NRBNode {
+    return BinarySearchTreeUtil.search(key, this.root, isAddtoDirty) as NRBNode;
   }
 
-  public levelOrder() {
-    this._traversalHelper.levelOrder(this.root);
+  public delete(key: number) {
+    if (this.root === null) return;
+    GlobalNodeDirtyFlows.reset();
+    const node = this.search(key, true);
+    if (!node) return null;
+    this._deleteNode(node);
   }
 
-  public levelOrderTraverse(callback: Function) {
-    this._traversalHelper.levelOrderTraverse(this.root, callback);
+  private _rotateLeft(node: NRBNode) {
+    if (!node) return node;
+    const props = { node, root: this.root };
+    BinarySearchTreeUtil.transformUtil().rotateLeft({ node, root: this.root });
+    this.root = props.root;
+  }
+
+  private _rotateRight(node: NRBNode) {
+    if (!node) return node;
+    const props = { node, root: this.root };
+    BinarySearchTreeUtil.transformUtil().rotateRight(props);
+    this.root = props.root;
   }
 
   private _swapColor(node1: NRBNode, node2: NRBNode) {
     if (node1 === null || node2 === null) {
       return;
     }
+    GlobalNodeDirtyFlows.startSequence();
     const temp = node1.color;
-    this._changeNodeColor([
-      { node: node1, color: node2.color },
-      { node: node2, color: temp },
-    ]);
+    node1.color = node2.color;
+    node2.color = temp;
+    GlobalNodeDirtyFlows.endSequence();
   }
 
   private _swapKey(node1: RBNode, node2: RBNode) {
     if (node1 === null || node2 === null) {
       return;
     }
+  
     const temp = node1.key;
     node1.key = node2.key;
     node2.key = temp;
-    this.dirtyFlows.push([{
-      node: node1,
-      data: { relatedNode: node2 },
-      dirtyType: RBNodeDirtyType.swapKey,
+
+    GlobalNodeDirtyFlows.addToDirtyFlows([{
+      node: cloneDeep(node1),
+      dirtyType: NodeDirtyType.swapKey,
+      data: { relatedNode: cloneDeep(node2) },
     }]);
-  }
-
-  public insert(key: number, afterBSTInsert?: (r: RBNode) => void) {
-    const node = new RBNode(key);
-    this.root = this._BSTInsert(this.root, node);
-    if (afterBSTInsert) {
-      afterBSTInsert(node); // for animation
-    }
-    this._fix2RedBlack(node);
-  }
-
-  public _rotateLeft(node: RBNode) {
-    // 1. update node right and its relationship
-    // 2. update node right parent and its relationship
-    // 3. update node parent and its relationship
-
-    if (!node.right) {
-      // not support null parent
-      return false;
-    }
-
-    let right = node.right; 
-    node.right = right && right.left || null; 
-    if (node.right) {
-      node.right.parent = node;
-    }
-    if (right) {
-      right.parent = node.parent; 
-    }
-    if (node.parent === null) {
-      this.root = right; 
-    } else if (node === node.parent.left) {
-      node.parent.left = right; 
-    } else {
-      node.parent.right = right; 
-    }
-    if (right) {
-      right.left = node; 
-    }
-    node.parent = right;
-
-    this.dirtyFlows.push([{
-      node: cloneDeep(node),
-      dirtyType: RBNodeDirtyType.leftRotated,
-    }]);
-    return true;
-  }
-
-  public _rotateRight(node: RBNode) {
-    if (!node.left) {
-      // not support null parent
-      return false;
-    }
-
-    let left = node.left; 
-    node.left = left && left.right || null; 
-    if (node.left !== null) {
-      node.left.parent = node;
-    }
-    if (left) {
-      left.parent = node.parent;
-    }
-    if (node.parent === null) {
-      this.root = left; 
-    } else if (node === node.parent.left) {
-      node.parent.left = left; 
-    } else {
-      node.parent.right = left;
-    }
-    if (left) {
-      left.right = node; 
-    }
-    node.parent = left;
-
-    this.dirtyFlows.push([{
-      node: cloneDeep(node),
-      dirtyType: RBNodeDirtyType.rightRotated,
-    }]);
-
-    return true;
   }
 
   private _fix2RedBlack(node: NRBNode) {
@@ -254,24 +115,23 @@ export class RedBlackTree {
       if (!parent || !grandParent) {
         break;
       }
-
       /*  Case : Parent of node is left child of Grand-parent of node */
       if (parent === grandParent.left) {
         let uncle = grandParent.right;
         /* Case : 1 The uncle of node is also red Only Recoloring required */
-        if (uncle !== null && uncle.color == RBColor.red) { 
-          this._changeNodeColor([
-            { node: grandParent, color: RBColor.red },
-            { node: parent, color: RBColor.black },
-            { node: uncle, color: RBColor.black },
-          ]);
+        if (uncle !== null && uncle.color == RBColor.red) {
+          GlobalNodeDirtyFlows.startSequence();
+          grandParent.color = RBColor.red;
+          parent.color = RBColor.black;
+          uncle.color = RBColor.black;
+          GlobalNodeDirtyFlows.endSequence();
           node = grandParent;
         } else {
           /* Case : 2 node is right child of its parent Left-rotation required */
-          if (node === parent.right) { 
-            this._rotateLeft(parent); 
+          if (node === parent.right) {
+            this._rotateLeft(parent);
             node = parent; 
-            parent = node.parent;
+            parent = node && node.parent || null;
           }
           /* Case : 3  node is left child of its parent Right-rotation required */
           this._rotateRight(grandParent);
@@ -282,18 +142,18 @@ export class RedBlackTree {
         /* Case : B Parent of pt is right child of Grand-parent of pt */
         let uncle = grandParent.left;
         if (uncle !== null && uncle.color == RBColor.red) { 
-          this._changeNodeColor([
-            { node: grandParent, color: RBColor.red },
-            { node: parent, color: RBColor.black },
-            { node: uncle, color: RBColor.black },
-          ]);
+          GlobalNodeDirtyFlows.startSequence();
+          grandParent.color = RBColor.red;
+          parent.color = RBColor.black;
+          uncle.color = RBColor.black;
+          GlobalNodeDirtyFlows.endSequence();
           node = grandParent;
         } else {
           /* Case : 2 node is right child of its parent Left-rotation required */
           if (node === parent.left) { 
             this._rotateRight(parent);
             node = parent; 
-            parent = node.parent;
+            parent = node && node.parent || null;
           }          
           /* Case : 3  node is left child of its parent Right-rotation required */
           this._rotateLeft(grandParent); 
@@ -303,76 +163,26 @@ export class RedBlackTree {
       }
     }
     if (this.root) {
-      this._changeNodeColor([
-        { node: this.root, color: RBColor.black }
-      ]);
+      this.root.dirty = true;
+      this.root.color = RBColor.black;
     }
-  }
-
-  public delete(key: number) {
-    if (this.root === null) return;
-    const node = this.search(key, true);
-    if (!node) return;
-    this._deleteNode(node);
-  }
-
-  public search(key: number, isAddtoDirty?: boolean): NRBNode {
-    if (this.root === null) {
-      return null;
-    }
-    let temp: NRBNode = this.root;
-    while(temp) {
-      if (key < temp.key) {
-        if (temp.left === null) {
-          break;
-        } else {
-          if (isAddtoDirty) {
-            this.dirtyFlows.push([{
-              node: cloneDeep(temp),
-              dirtyType: RBNodeDirtyType.visited,
-            }]);
-          }
-          temp = temp.left;
-        }
-      } else if (key > temp.key) {
-        if (temp.right === null) {
-          break;
-        } else {
-          if (isAddtoDirty) {
-            this.dirtyFlows.push([{
-              node: cloneDeep(temp),
-              dirtyType: RBNodeDirtyType.visited,
-            }]);
-          }
-          temp = temp.right;
-        }
-      } else {
-        break;
-      }
-    }
-    if (temp.key !== key) {
-      return null;
-    }
-    return temp;
   }
 
   private _deleteNode(node: RBNode) {
     const replaceNode = this._BSTreplace(node);
-    const flows = [
+
+    GlobalNodeDirtyFlows.addToDirtyFlows([
       {
-        node: node,
-        data: { text: `Delete Target`, duration: 30 },
-        dirtyType: RBNodeDirtyType.showText,
-      }
-    ];
-    if (replaceNode) {
-      flows.push(      {
-        node: replaceNode,
-        data: { text: 'Replace Node', duration: 30 },
-        dirtyType: RBNodeDirtyType.showText,
-      })
-    }
-    this.dirtyFlows.push(flows);
+        node: cloneDeep(node),
+        dirtyType: NodeDirtyType.showText,
+        data: { text: 'Delete Target' }
+      },
+      {
+        node: cloneDeep(replaceNode),
+        dirtyType: NodeDirtyType.showText,
+        data: { text: 'Replace Node' }
+      },
+    ], 'RedBlackTree._deleteNode');
 
     const areBothBlack = (replaceNode === null || replaceNode.color === RBColor.black) &&
       (node.color === RBColor.black);
@@ -386,11 +196,9 @@ export class RedBlackTree {
         if (areBothBlack) {
           this._fixDoubleBlack(node);
         } else {
-          const sibling = node.sibling();
-          if (sibling) {
-            this._changeNodeColor([{
-              node: sibling, color: RBColor.red
-            }]);
+          if (node.sibling) {
+            node.sibling.dirty = true;
+            node.sibling.color = RBColor.red;
           }
         }
         if (node.parent) {
@@ -417,12 +225,12 @@ export class RedBlackTree {
             node.parent.right = replaceNode;
           }
         }
-        replaceNode.parent = node.parent;
         if (areBothBlack) {
           // TODO 这里一定不可能达到啊 如果只有一个child， replaceNode 也为黑，若replaceNode还有子节点，则在其他子节点路径必须还有黑，或者没有子节点，
           this._fixDoubleBlack(replaceNode);
         } else {
-          this._changeNodeColor([{node: replaceNode,color: RBColor.black}]);
+          replaceNode.dirty = true;
+          replaceNode.color = RBColor.black;
         }
       }
       return;
@@ -433,87 +241,65 @@ export class RedBlackTree {
     this._deleteNode(replaceNode);
   }
 
-  private _changeNodeColor(arr: { node: RBNode, color: RBColor}[]) {
-    const result: RBNodeDirtyInfo[] = [];
-    arr.forEach(data => {
-      const { node, color } = data;
-      if (node.color !== color) {
-        result.push({
-          node,
-          data: { color: RBCOLOR_HEX_TABLE[color] },
-          dirtyType: RBNodeDirtyType.recolor,
-        });
-        node.color = color;
-      }
-    });
-    if (result.length) {
-      this.dirtyFlows.push(result);
-    }
-  }
 
   private _fixDoubleBlack(node: NRBNode) {
     if (node === null || node === this.root) return;
-    const sibling = node.sibling();
-    const parent = node.parent;
+    let parent = node.parent;
     if (!parent) {
       return;
     }
-    if (!sibling) {
+    if (!node.sibling) {
       this._fixDoubleBlack(parent);
     } else {
-      if (sibling.color === RBColor.red) {
-        this._changeNodeColor([
-          { node: parent, color: RBColor.red },
-          { node: sibling, color: RBColor.black },
-        ]);
-        if (sibling.isOnLeft()) {
+      if (node.sibling.color === RBColor.red) {
+        GlobalNodeDirtyFlows.startSequence();
+        parent.color = RBColor.red;
+        node.sibling.color = RBColor.black;
+        GlobalNodeDirtyFlows.endSequence();
+        if (node.sibling.isOnLeft()) {
           this._rotateRight(parent);
         } else {
           this._rotateLeft(parent);
         }
         this._fixDoubleBlack(node);
       } else {
-        if (sibling.hasRedChild()) {
-          if (sibling.left && sibling.left.color === RBColor.red) {
-            if (sibling.isOnLeft()) {
-              this._changeNodeColor([
-                { node: sibling.left, color: sibling.color },
-                { node: sibling, color: parent.color },
-              ]);
+        if (node.sibling.hasRedChild()) {
+          if (node.sibling.left && node.sibling.left.color === RBColor.red) {
+            if (node.sibling.isOnLeft()) {
+              GlobalNodeDirtyFlows.startSequence();
+              node.sibling.left.color = node.sibling.color;
+              node.sibling.color = parent.color;
+              GlobalNodeDirtyFlows.endSequence();
               this._rotateRight(parent);
             } else {
-              sibling.left.color = parent.color;
-              this._rotateRight(sibling);
+              node.sibling.left.color = parent.color;
+              this._rotateRight(node.sibling);
               this._rotateLeft(parent);
             }
           } else {
-            if (sibling.isOnLeft()) {
-              this._changeNodeColor([
-                { node: sibling.right!, color: parent.color }
-              ]);
-              this._rotateLeft(sibling);
+            if (node.sibling.isOnLeft()) {
+              node.sibling.right!.dirty = true;
+              node.sibling.right!.color = parent.color;
+              this._rotateLeft(node.sibling);
               this._rotateRight(parent);
             } else {
-              this._changeNodeColor([
-                { node: sibling.right!, color: sibling.color },
-                { node: sibling, color: parent.color },
-              ]);
+              GlobalNodeDirtyFlows.startSequence();
+              node.sibling.right!.color = node.sibling.color;
+              node.sibling.color = parent.color;
+              GlobalNodeDirtyFlows.endSequence();
               this._rotateLeft(parent);
             }
           }
-          this._changeNodeColor([
-            { node: parent, color: RBColor.black }
-          ]);
+          parent!.dirty = true;
+          parent!.color = RBColor.black;
         } else {
-          this._changeNodeColor([
-            { node: sibling, color: RBColor.red }
-          ]);
+          node.sibling.dirty = true;
+          node.sibling.color = RBColor.red;
           if (parent.color === RBColor.black) {
             this._fixDoubleBlack(parent);
           } else {
-            this._changeNodeColor([
-              { node: parent, color: RBColor.black }
-            ]);
+            parent.dirty = true;
+            parent.color = RBColor.black;
           }
         }
       }
@@ -535,19 +321,6 @@ export class RedBlackTree {
   //   return node.right || node.left;
   // }
 
-  private _BSTInsert(root: RBNode | null, node: RBNode) {
-    if (root === null) return node;
-    if (node.key < root.key) {
-      this.dirtyFlows.push([ { node: root, dirtyType: RBNodeDirtyType.visited } ]);
-      root.left = this._BSTInsert(root.left, node);
-      root.left.parent = root; 
-    } else if (node.key > root.key) {
-      this.dirtyFlows.push([ { node: root, dirtyType: RBNodeDirtyType.visited } ]);
-      root.right = this._BSTInsert(root.right, node); 
-      root.right.parent = root; 
-    }
-    return root;
-  }
 
 }
 
@@ -604,30 +377,3 @@ export function checkDelete() {
   console.log('level order')
   tree.levelOrder();
 }
-
-// checkDelete();
-
-
-export function checkrotateLeft() {
-  const node = new RBNode(10);
-
-  node.left = new RBNode(8);
-  node.left.parent = node;
-
-  node.left.left = new RBNode(4);
-  node.left.left.parent = node.left;
-
-  node.left.right = new RBNode(15);
-  node.left.right.parent = node.left;
-
-  node.left.right.left = new RBNode(14);
-  node.left.right.left.parent = node.left.right;
-
-  const rbt = new RedBlackTree();
-  rbt.root = node;
-  // const root = rbt.rotateLeft(node, node.left);
-  // console.log(root.left, root.left.left, 'rootroot')
-  // rbt.root = root;
-  rbt.levelOrder();
-}
-// checkrotateLeft();

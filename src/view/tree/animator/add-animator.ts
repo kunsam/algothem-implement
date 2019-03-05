@@ -4,14 +4,14 @@ import { BasicTreeNode } from './../../../tree/node/basic-node';
 import BasicNodeViewobject from '../node/basic-node-viewobject';
 
 
-export default class DeleteNodeAnimator extends AnimatorBase {
-  constructor(node: BasicTreeNode, viewObject: BasicNodeViewobject, duration?: number) {
+export default class AddNodeAnimator extends AnimatorBase {
+  private _callback: Function;
+  constructor(node: BasicTreeNode, viewObject: BasicNodeViewobject, callback: Function, duration?: number) {
     super(node, viewObject, duration);
+    this._callback = callback;
   }
   public animate() {
-    if (this._viewObject.parent) {
-      this._viewObject.parent.remove(this._viewObject);
-    }
+    this._callback();
     return false;
   }
 }

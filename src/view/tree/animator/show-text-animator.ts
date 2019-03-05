@@ -1,13 +1,16 @@
+
 import * as THREE from 'three';
 import AnimatorBase from "./animator-base";
-import { RBNode } from "../../../tree/red-black-tree";
 import FontManager from '../../font/font-manager';
+import { BasicTreeNode } from './../../../tree/node/basic-node';
+import BasicNodeViewobject from '../node/basic-node-viewobject';
+
 
 export interface ShowTextAnimatorProps{
-  node: RBNode;
   text: string;
-  mesh: THREE.Mesh;
   duration?: number;
+  node: BasicTreeNode;
+  viewObject: BasicNodeViewobject;
   parameters?: THREE.TextGeometryParameters;
 }
 
@@ -17,7 +20,7 @@ export default class ShowTextAnimator extends AnimatorBase {
   private _props: ShowTextAnimatorProps;
 
   constructor(props: ShowTextAnimatorProps) {
-    super(props.node, props.duration);
+    super(props.node, props.viewObject, props.duration);
     this._props = props;
   }
   private _addText() {
@@ -38,12 +41,12 @@ export default class ShowTextAnimator extends AnimatorBase {
     textMesh.position.y += 20;
     textMesh.position.x += 50;
     this._textMesh = textMesh;
-    this._props.mesh.add(textMesh);
+    this._viewObject.add(textMesh);
   }
 
   private _resetText() {
     if (this._textMesh) {
-      this._props.mesh.remove(this._textMesh);
+      this._viewObject.remove(this._textMesh);
     }
   }
 

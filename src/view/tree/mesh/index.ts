@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { NRBNode, RBColor } from './../../../tree/red-black-tree';
+import { NRBNode, RBColor } from './../../../tree/node/red-black-node';
+
 
 export function getSphereNode(node: NRBNode, font: THREE.Font): THREE.Mesh | undefined {
   if (node === null) {

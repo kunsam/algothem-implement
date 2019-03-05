@@ -1,24 +1,28 @@
 import * as THREE from 'three';
 import AnimatorBase from "./animator-base";
-import { RBNode } from "../../../tree/red-black-tree";
+import { BasicTreeNode } from './../../../tree/node/basic-node';
+import BasicNodeViewobject from '../node/basic-node-viewobject';
+
 
 export default class RecolorNodeAnimator extends AnimatorBase {
-  private _mesh: THREE.Mesh;
   private _changeToColor: number;
   private _colorChanged: boolean = false;
 
-  constructor(node: RBNode, mesh: THREE.Mesh, changeToColor: number, duration?: number) {
-    super(node, duration);
-    this._mesh = mesh;
+  constructor(node: BasicTreeNode, viewObject: BasicNodeViewobject, changeToColor: number, duration?: number) {
+    super(node, viewObject, duration);
     this._changeToColor = changeToColor;
+  }
+
+  private get mesh() {
+    return this._viewObject.nodeMesh;
   }
 
   private _changeColor() {
     if (this._colorChanged) {
       return;
     }
-    if (this._mesh.material instanceof THREE.MeshPhongMaterial) {
-      this._mesh.material.color.setHex(this._changeToColor);
+    if (this.mesh.material instanceof THREE.MeshPhongMaterial) {
+      this.mesh.material.color.setHex(this._changeToColor);
       this._colorChanged = true;
     }
   }

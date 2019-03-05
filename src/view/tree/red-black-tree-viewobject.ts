@@ -1,136 +1,75 @@
-
 import * as THREE from 'three';
 import { message } from 'antd';
 import 'antd/lib/message/style/index.css';
 import FontManager from '../font/font-manager';
 import AnimatorBase from './animator/animator-base';
-import { RBNode } from './../../tree/red-black-tree';
-import RotatedAnimator from './animator/rotated-animator';
+import { RBNode } from '../../tree/node/red-black-node';
+import { RedBlackTree } from '../../tree/red-black-tree';
 import { App } from './../../../pages/tree/red-black-tree';
-import { getSphereNode, getConnectLineMesh } from './mesh';
-import RecolorNodeAnimator from './animator/recolor-animator';
-import VisitedNodeAnimator from './animator/visited-node-animator';
-import { RedBlackTree, RBNodeDirtyInfo } from '../../tree/red-black-tree';
-import ShowTextAnimator from './animator/show-text-animator';
+import { BasicTreeNode } from './../../tree/node/basic-node';
+import { RBNodeDirtyType } from './../../tree/node/red-black-node';
+import RedBlackNodeViewObject from './node/red-black-node-viewobject';
+import { GlobalNodeDirtyFlows, NodeDirtyType } from './global-node-dirty-flows';
+
+import RotatedAnimator from './animator/rotated-animator';
 import SwapKeyAnimator from './animator/swapkey-animator';
 import DeleteNodeAnimator from './animator/delete-animator';
+import ShowTextAnimator from './animator/show-text-animator';
+import RecolorNodeAnimator from './animator/recolor-animator';
+import VisitedNodeAnimator from './animator/visited-node-animator';
+import AddNodeAnimator from './animator/add-animator';
+import BasicNodeViewobject from './node/basic-node-viewobject';
 
-
-export enum RBNodeDirtyType{
-  none = "NONE",
-  insert = "INSERT",
-  swapKey = "SWAPKEY",
-  visited = "VISITED",
-  recolor = "RECOLOR",
-  deleted = "DELETED",
-  showText = "SHOWTEXT",
-  leftRotated = "LEFTROTATED",
-  rightRotated = "RIGHTROTATED",
-}
 
 
 export class RBNodeViewObject {
   public node: RBNode;
   public mesh: THREE.Mesh;
-
-  public dirty: boolean = false;
-  private _dirtyFrame: number = 0;
-  private _oldColor?: THREE.Color;
-  public static DirtyMaxFrame: number = 20;
-
   constructor(node: RBNode, mesh: THREE.Mesh) {
     this.mesh = mesh;
     this.node = node;
-  }
-
-  public onDirtyAnimate(onEnd: Function) {
-    if (this.dirty && this._dirtyFrame < RBNodeViewObject.DirtyMaxFrame) {
-      if (!this._oldColor) {
-        this._oldColor = this.mesh.material.color;
-      }
-      this.mesh.material.color = new THREE.Color(0x00ff00)
-      this._dirtyFrame++;
-    } else if (this._dirtyFrame >= RBNodeViewObject.DirtyMaxFrame) {
-      this._dirtyFrame = 0;
-      this.dirty = false;
-      this.mesh.material.color = this._oldColor;
-      this._oldColor = undefined;
-      onEnd();
-    }
   }
 }
 
 
 
-
 export class RedBlackTreeViewObject extends THREE.Object3D {
-
-  public static originPosition = new THREE.Vector3(0, 400, 0);
-  public static horizontalOffset = 80;
-  public static verticalOffset = 160;
 
   public tree: RedBlackTree;
   private _animatorFlows: AnimatorBase[][] = [];
-  private _nodeViewObjectMap: Map<number, RBNodeViewObject> = new Map();
+  private _nodeViewObjectMap: Map<number, RedBlackNodeViewObject> = new Map();
 
   private _app: App;
-  private _currentActiveAnimatorsLength?: number;
-  private _currentEndAnimatorsLength: number = 0;
+  private _currentAcitiveAnimators?: Set<number>;
 
   private _enterAnimating: boolean = false;
 
+  private __maxDepthViewObject?: RedBlackNodeViewObject;
 
   constructor(app: App, tree: RedBlackTree) {
     super();
     this._app = app;
     this.tree = tree;
-    tree.levelOrderTraverse((node: RBNode) => {
-      this.addNode(node);
+    tree.levelOrderTraverse((node: BasicTreeNode) => {
+      this.addNode(node as RBNode);
     });
   }
 
-  public static getChildPosition(rbNode: RBNode, parentPosition: THREE.Vector3) {
-    if (!parentPosition) {
-      return RedBlackTreeViewObject.originPosition;
-    } else {
-      const position = parentPosition.clone();
-      position.y -= RedBlackTreeViewObject.verticalOffset;
-      if (rbNode.isOnLeft()) {
-        position.x -= RedBlackTreeViewObject.horizontalOffset;
-        if (rbNode.sibling() && rbNode.hasChild()) {
-          position.x -= RedBlackTreeViewObject.horizontalOffset;
-        }
-      } else {
-        position.x += RedBlackTreeViewObject.horizontalOffset;
-        if (rbNode.sibling() && rbNode.hasChild()) {
-          position.x += RedBlackTreeViewObject.horizontalOffset;
-        }
+  public addNode(node: RBNode, isClone?: boolean) {
+    if (!this._nodeViewObjectMap.has(node.key)) {
+      let vnode = isClone ? this.tree.search(node.key) : node;
+      if (vnode) {
+        const viewObject = new RedBlackNodeViewObject(vnode, FontManager.getFont('helv'));
+        if (isClone) viewObject.cloneNode = node;
+        this._nodeViewObjectMap.set(node.key, viewObject);
+        this.add(viewObject);
       }
-      return position;
-    }
-  }
-
-  public addNode(node: RBNode) {
-    const sphereNode = getSphereNode(node, FontManager.getFont('helv'));
-    if (sphereNode) {
-      const rbNode: RBNode = sphereNode.userData.node;
-      const parentPosition = rbNode && rbNode.parent && rbNode.parent.userData.position;
-      sphereNode.position.copy(RedBlackTreeViewObject.getChildPosition(rbNode, parentPosition))
-      node.userData.position = sphereNode.position;
-      const line = getConnectLineMesh(sphereNode);
-      if (line) {
-        line.userData.isConnectLine = true;
-        sphereNode.add(line);
-      }
-      this._nodeViewObjectMap.set(node.key, new RBNodeViewObject(node, sphereNode));
-      this.add(sphereNode);
     }
   }
 
   private _resetAnimatorQueue() {
     this._animatorFlows.shift();
-    this._currentEndAnimatorsLength = 0;
-    this._currentActiveAnimatorsLength = undefined;
+    this._currentAcitiveAnimators = undefined;
   }
 
   public update() {
@@ -143,16 +82,16 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
           if (!animators.length) {
             this._resetAnimatorQueue();
           } else {
-            if (!this._currentActiveAnimatorsLength) {
-              this._currentActiveAnimatorsLength = animators.length;
+            if (!this._currentAcitiveAnimators) {
+              this._currentAcitiveAnimators = new Set();
+              animators.forEach((_, index) => this._currentAcitiveAnimators!.add(index));
             }
-            animators.forEach(animator => {
+            animators.forEach((animator, index) => {
               const isAnimating = animator.animate();
               if (!isAnimating) {
-                this._currentEndAnimatorsLength++;
-                if (this._currentEndAnimatorsLength === this._currentActiveAnimatorsLength) {
+                this._currentAcitiveAnimators!.delete(index);
+                if (this._currentAcitiveAnimators!.size === 0) {
                   this._resetAnimatorQueue();
-                  // console.log('next animator ---\n')
                 }
               }
             });
@@ -164,29 +103,26 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
         message.info('Operation Done!', 0.8);
         this._enterAnimating = false;
         this._app.eventManager.emitOperationDone();
+        GlobalNodeDirtyFlows.reset();
       }
     }
   }
 
-  private _dityFlowsAnimationFlow(dirtyNodesFlows: RBNodeDirtyInfo[][]) {
+  private _dityFlowsAnimationFlow() {
     const logs: any[] = [];
     this._animatorFlows = [];
-    dirtyNodesFlows.forEach(nodeArray => {
-      logs.push(nodeArray.map(n => ({ dt: n.dirtyType, node: n.node, data: n.data })));
+    const dirtyNodesFlows = GlobalNodeDirtyFlows.dirtyFlows;
+    dirtyNodesFlows.forEach(flowData => {
+      logs.push(flowData.flow.map(n => ({ dt: n.data.type, node: n.node, data: n.data })));
       const animators: AnimatorBase[] = [];
-      nodeArray.forEach(info => {
-        switch (info.dirtyType) {
-          case RBNodeDirtyType.visited: {
+      flowData.flow.forEach(info => {
+        switch (info.data.type) {
+          case NodeDirtyType.visited: {
             if (!info.node) break;
-            const viewobject = this._nodeViewObjectMap.get(info.node.key);
-            if (viewobject) {
-              animators.push(new ShowTextAnimator({
-                node: info.node,
-                text: 'Visited',
-                mesh: viewobject.mesh,
-              }));
+            const viewObject = this._nodeViewObjectMap.get(info.node.key);
+            if (viewObject) {
               animators.push(new VisitedNodeAnimator(
-                info.node, viewobject.mesh
+                info.node, viewObject
               ));
             }
             break;
@@ -195,44 +131,43 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
             if (!info.node) break;
             const color = info.data && info.data.color;
             if (color === undefined) break;
-            const viewobject = this._nodeViewObjectMap.get(info.node.key);
-            if (viewobject) {
-              animators.push(new ShowTextAnimator({
-                node: info.node,
-                text: 'ReColor',
-                mesh: viewobject.mesh,
-              }));
+            const viewObject = this._nodeViewObjectMap.get(info.node.key);
+            if (viewObject) {
               animators.push(new RecolorNodeAnimator(
                 info.node,
-                viewobject.mesh,
+                viewObject,
                 color === 0 ? 0x000000 : color,
               ));
             }
             break;
           }
-          case RBNodeDirtyType.rightRotated:
-          case RBNodeDirtyType.leftRotated: {
+          case NodeDirtyType.rightRotated:
+          case NodeDirtyType.leftRotated: {
             if (!info.node) break;
-            animators.push(new RotatedAnimator(
-              info.node,
-              info.dirtyType,
-              this._nodeViewObjectMap,
-            ));
+            const viewObject = this._nodeViewObjectMap.get(info.node.key);
+            if (viewObject) {
+              animators.push(new RotatedAnimator(
+                info.node,
+                viewObject,
+                info.data.type,
+                this._nodeViewObjectMap,
+              ));
+            }
             break;
           }
-          case RBNodeDirtyType.showText: {
+          case NodeDirtyType.showText: {
             if (!info.node) {
               message.error(info.data.text, 1);
             } else {
-              const viewobject = this._nodeViewObjectMap.get(info.node.key);
-              if (viewobject) {
+              const viewObject = this._nodeViewObjectMap.get(info.node.key);
+              if (viewObject) {
                 const text = info.data && info.data.text;
                 const duration = info.data && info.data.duration;
                 if (text) {
                   animators.push(new ShowTextAnimator({
                     node: info.node,
                     text: text,
-                    mesh: viewobject.mesh,
+                    viewObject,
                     duration: duration && parseInt(duration),
                   }));
                 }
@@ -240,7 +175,7 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
             }
             break;
           }
-          case RBNodeDirtyType.swapKey: {
+          case NodeDirtyType.swapKey: {
             if (info.node && info.data && info.data.relatedNode) {
               const relatedNode = info.data && info.data.relatedNode;
               const viewobject = this._nodeViewObjectMap.get(info.node.key);
@@ -249,8 +184,8 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
                 animators.push(new SwapKeyAnimator(
                   info.node,
                   relatedNode,
-                  viewobject.mesh,
-                  viewobject2.mesh,
+                  viewobject,
+                  viewobject2,
                 ));
                 this._nodeViewObjectMap.set(relatedNode.key, viewobject);
                 this._nodeViewObjectMap.set(info.node.key, viewobject2);
@@ -258,106 +193,108 @@ export class RedBlackTreeViewObject extends THREE.Object3D {
             }
             break;
           }
-          case RBNodeDirtyType.deleted: {
+          case NodeDirtyType.deleted: {
             if (info.data.key !== undefined) {
               const viewobject = this._nodeViewObjectMap.get(info.data.key);
               if (viewobject) {
                 animators.push(new DeleteNodeAnimator(
                   new RBNode(info.data.key),
-                  viewobject.mesh,
+                  viewobject,
                 ));
                 this._nodeViewObjectMap.delete(info.data.key);
               }
             }
             break;
           }
+          case NodeDirtyType.added: {
+            if (info.node) {
+              animators.push(new AddNodeAnimator(
+                info.node,
+                new BasicNodeViewobject(info.node, FontManager.getFont('helv')),
+                () => {
+                  if (info.node!.parent) {
+                    const pvo = this._nodeViewObjectMap.get(info.node!.parent.key);
+                    if (pvo) {
+                      info.node!.parent.userData.position = pvo.position
+                    }
+                  }
+                  this.addNode(info.node as RBNode, true);
+                }
+              ));
+            }
+            break;
+          }
         }
       });
-      this._animatorFlows.push(animators);
+      if (animators.length) {
+        this._animatorFlows.push(animators);
+      }
     });
-    console.log(logs, 'log')
+    console.log(logs, this._animatorFlows.map(c => c), 'log')
   }
 
   public insert(key: number) {
-    this.tree.dirtyFlows = [];
-    if (!this.tree.root) {
-      this.tree.insert(key);
-      this.addNode(new RBNode(key));
-      this._app.eventManager.emitOperationDone();
-      return;
-    }
+    GlobalNodeDirtyFlows.reset();
     if (this.tree.search(key)) {
       message.error(`${key}已存在!`, 0.8)
       this._app.eventManager.emitOperationDone();
       return;
     }
-    this.tree.insert(key, (r) => {
-      this.addNode(r);
-    });
-    const dirtyNodesFlows: RBNodeDirtyInfo[][] = this.tree.dirtyFlows;
-    this._dityFlowsAnimationFlow(dirtyNodesFlows);
+    this.tree.insert(key);
+    this._dityFlowsAnimationFlow();
+    this.__maxDepthViewObject = undefined;
   }
 
   public delete(key: number) {
-    this.tree.dirtyFlows = [];
+    // this.tree.dirtyFlows = [];
     if (!this.tree.root) {
       this._app.eventManager.emitOperationDone();
       message.error('不存在树', 0.8);
       return;
     }
     this.tree.delete(key);
-    const dirtyNodesFlows: RBNodeDirtyInfo[][] | undefined = this.tree.dirtyFlows;
-    if (!dirtyNodesFlows.length) {
-      message.error(`${key}不存在!`, 0.8);
-      this._app.eventManager.emitOperationDone();
-    } else {
-      dirtyNodesFlows.push([{
-        node: null,
-        data: { key },
-        dirtyType: RBNodeDirtyType.deleted,
-      }]);
-      this._dityFlowsAnimationFlow(dirtyNodesFlows);
-    }
+    // const dirtyNodesFlows: RBNodeDirtyInfo[][] | undefined = this.tree.dirtyFlows;
+    // if (!dirtyNodesFlows.length) {
+    //   message.error(`${key}不存在!`, 0.8);
+    //   this._app.eventManager.emitOperationDone();
+    // } else {
+    //   dirtyNodesFlows.push([{
+    //     node: null,
+    //     data: { key },
+    //     dirtyType: RBNodeDirtyType.deleted,
+    //   }]);
+    //   this._dityFlowsAnimationFlow(dirtyNodesFlows);
+    // }
+    this.__maxDepthViewObject = undefined;
   }
 
   public search(key: number) {
-    this.tree.dirtyFlows = [];
     const findNode = this.tree.search(key, true);
-    const dirtyNodesFlows: RBNodeDirtyInfo[][] | undefined = this.tree.dirtyFlows;
-    if (!findNode) {
-      message.error(`${key}不存在!`, 0.8);
-      this._app.eventManager.emitOperationDone();
-    } else {
-      dirtyNodesFlows.push([{
-        node: findNode,
-        data: { text: 'Find Target' },
-        dirtyType: RBNodeDirtyType.showText,
-      }]);
-      this._dityFlowsAnimationFlow(dirtyNodesFlows);
-    }
+    console.log(findNode, 'findNode')
+    // const dirtyNodesFlows: RBNodeDirtyInfo[][] | undefined = this.tree.dirtyFlows;
+    // if (!findNode) {
+    //   message.error(`${key}不存在!`, 0.8);
+    //   this._app.eventManager.emitOperationDone();
+    // } else {
+    //   dirtyNodesFlows.push([{
+    //     node: findNode,
+    //     data: { text: 'Find Target' },
+    //     dirtyType: RBNodeDirtyType.showText,
+    //   }]);
+    //   this._dityFlowsAnimationFlow(dirtyNodesFlows);
+    // }
   }
 
-  public rotate(key: number, isLeft?: boolean) {
-    this.tree.dirtyFlows = [];
-    const findNode = this.tree.search(key, true);
-    if (!findNode) {
-      message.error(`${key}不存在!`, 0.8);
-      this._app.eventManager.emitOperationDone();
-    } else {
-      let rotateSuccess = false;
-      if (isLeft) {
-        rotateSuccess = this.tree._rotateLeft(findNode);
-      } else {
-        rotateSuccess = this.tree._rotateRight(findNode);
-      }
-      const dirtyNodesFlows: RBNodeDirtyInfo[][] | undefined = this.tree.dirtyFlows;
-      if (!rotateSuccess) {
-        message.info(`Not support null as parent`, 0.1);
-        this._app.eventManager.emitOperationDone();
-      } else {
-        this._dityFlowsAnimationFlow(dirtyNodesFlows);
-      }
+  public getMaxDepthNodeViewObject() {
+    if (this.__maxDepthViewObject) {
+      return this.__maxDepthViewObject;
     }
+    const data = this.tree.getMaxDepthNode();
+    if (data.node) {
+      this.__maxDepthViewObject = this._nodeViewObjectMap.get(data.node.key);
+      return this.__maxDepthViewObject;
+    }
+    return;
   }
 
 }

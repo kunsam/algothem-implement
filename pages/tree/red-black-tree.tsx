@@ -1,15 +1,17 @@
 import { Modal } from 'antd';
-import 'antd/lib/modal/style/index.css';
 import * as THREE from 'three'
 import * as React from 'react'
+import 'antd/lib/modal/style/index.css';
 import AppLayout from '../../layouts/app';
 import ObjectInspector from 'react-object-inspector';
 import EventManager from '../../src/core/event-manager';
+import FontManager from '../../src/view/font/font-manager';
+import { RedBlackTree } from '../../src/tree/red-black-tree';
 import { ControlPanel } from '../../components/control-panel';
 import { OrbitControls } from '../../static/js/orbitcontrol.js';
-import { RedBlackTree, RBNode } from '../../src/tree/red-black-tree';
 import { RedBlackTreeViewObject } from '../../src/view/tree/red-black-tree-viewobject';
-import FontManager from '../../src/view/font/font-manager';
+import { RBNode } from '../../src/tree/node/red-black-node';
+
 
 export class RedBlackTreePage extends React.Component<{app: App}> {
 
@@ -45,13 +47,6 @@ export class RedBlackTreePage extends React.Component<{app: App}> {
     plane.receiveShadow = true;
     scene.add( plane );
 
-    var helper = new THREE.GridHelper( 2000, 100 );
-    helper.position.y = - 199;
-    if (helper.material instanceof THREE.Material) {
-      helper.material.opacity = 0.25;
-      helper.material.transparent = true;
-    }
-    scene.add( helper );
     return scene;
   }
 
@@ -61,6 +56,7 @@ export class RedBlackTreePage extends React.Component<{app: App}> {
     redblacktree.insert(50);
     redblacktree.insert(30);
     redblacktree.insert(42);
+    redblacktree.insert(20);
     redblacktree.insert(18);
     redblacktree.insert(26);
     redblacktree.insert(50);
@@ -77,12 +73,6 @@ export class RedBlackTreePage extends React.Component<{app: App}> {
       });
       this.props.app.eventManager.listenFindKey((key) => {
         this._redBlackTreeViewObject!.search(key);
-      });
-      this.props.app.eventManager.listenLeftRotate((key) => {
-        this._redBlackTreeViewObject!.rotate(key, true);
-      });
-      this.props.app.eventManager.listenRightRotate((key) => {
-        this._redBlackTreeViewObject!.rotate(key);
       });
     });
     return treeContainer;
@@ -103,6 +93,14 @@ export class RedBlackTreePage extends React.Component<{app: App}> {
     this.camera = camera;
     scene.add( camera );
 
+    const helper = new THREE.GridHelper( 2000, 100 );
+    helper.position.y = - 199;
+    if (helper.material instanceof THREE.Material) {
+      helper.material.opacity = 0.25;
+      helper.material.transparent = true;
+    }
+    scene.add( helper );
+
     const renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -115,6 +113,8 @@ export class RedBlackTreePage extends React.Component<{app: App}> {
       renderer.render( scene, camera );
     });
   
+
+
     const tree = this.initTree();
     scene.add( tree );
   
@@ -148,6 +148,11 @@ export class RedBlackTreePage extends React.Component<{app: App}> {
       requestAnimationFrame( animate );
       if (scope && scope._redBlackTreeViewObject) {
         scope._redBlackTreeViewObject.update();
+        // RedBlackTreeViewObject.originPosition
+        const maxDepthViewObject = scope._redBlackTreeViewObject.getMaxDepthNodeViewObject();
+        if (maxDepthViewObject) {
+          helper.position.y = maxDepthViewObject.position.y - 200;
+        }
       }
       renderer.render( scene, camera );
     }
