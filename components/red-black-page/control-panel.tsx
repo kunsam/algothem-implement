@@ -1,54 +1,9 @@
-
 import * as React from 'react'
 import './control-panel.less';
-import { Button, Input } from 'antd';
-import { App } from '../pages/tree/red-black-tree';
+import { App } from '../../layouts/app/app-interface';
+import { ButtonInputPair } from '../button-input-pair/button-input-pair';
+import { IRedBlackTreeEventType } from '../../pages/tree/red-black-tree';
 
-interface ButtonInputPairProps{
-  type?: string;
-  label: string;
-  disabled?: boolean;
-  onConfirm: (key: number) => void;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-export class ButtonInputPair extends React.Component<ButtonInputPairProps, any> {
-  constructor(props: ButtonInputPairProps) {
-    super(props);
-    this.state = {
-      value: '',
-    }
-  }
-
-  public onInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({ value: e.target.value });
-    this.props.onInputChange(e);
-  }
-
-  public onClick() {
-    if (this.state.value) {
-      this.props.onConfirm(parseInt(this.state.value));
-      this.setState({ value: '' });
-    }
-  }
-
-  render() {
-    return (
-      <div className="ButtonInputPair">
-        <Input
-          type={this.props.type}
-          value={this.state.value}
-          disabled={this.props.disabled === undefined ? false : this.props.disabled}
-          onKeyDown={e => {
-            if (e.keyCode === 13) this.onClick()
-          }}
-          onChange={this.onInputChange.bind(this)}
-        />
-        <Button onClick={this.onClick.bind(this)} >{this.props.label}</Button>
-      </div>
-    )
-  }
-}
 
 export class ControlPanel extends React.Component<{ app: App }, {
   operating: boolean,
@@ -71,7 +26,7 @@ export class ControlPanel extends React.Component<{ app: App }, {
 
   componentDidMount() {
     if (this.props.app) {
-      this.props.app.eventManager.listenOperationDone(this.onOperationDone.bind(this));
+      this.props.app.eventManager.listen(IRedBlackTreeEventType.operationDone, this.onOperationDone.bind(this));
     }
   }
 
@@ -83,27 +38,18 @@ export class ControlPanel extends React.Component<{ app: App }, {
   }
 
   public onConfirmFind(key: number) {
-    this.props.app.eventManager.emitFindKey(key);
+    this.props.app.eventManager.emit(IRedBlackTreeEventType.onFind, key);
     this._change2Operating();
   }
 
   public onConfirmInsert(key: number) {
-    this.props.app.eventManager.emitInsertKey(key);
-    this._change2Operating();
+    console.log(this.props, 'this.props')
+    // this.props.app.eventManager.emit(IRedBlackTreeEventType.onInsert, key);
+    // this._change2Operating();
   }
 
   public onConfirmDelete(key: number) {
-    this.props.app.eventManager.emitDeleteKey(key);
-    this._change2Operating();
-  }
-
-  public onConfirmLeftRotate(key: number) {
-    this.props.app.eventManager.emitLeftRotate(key);
-    this._change2Operating();
-  }
-
-  public onConfirmRightRotate(key: number) {
-    this.props.app.eventManager.emitRightRotate(key);
+    this.props.app.eventManager.emit(IRedBlackTreeEventType.onDelete, key);
     this._change2Operating();
   }
   
