@@ -7,9 +7,6 @@ import ObjectInspector from 'react-object-inspector';
 import { App, AppCanvas } from '../../layouts/app/app-interface';
 import FontManager from '../../src/view/font/font-manager';
 import { RBNode } from '../../src/tree/node/red-black-node';
-import { RedBlackTree } from '../../src/tree/red-black-tree';
-import { ControlPanel } from '../../components/red-black-page/control-panel';
-import { RedBlackTreeViewObject } from '../../src/view/tree/red-black-tree-viewobject';
 import { AppEventType } from '../../src/core/event-manager';
 import { BinaryTreeViewObject } from '../../src/view/tree/binary-tree-viewobject';
 import { BinarySearchTree } from '../../src/tree/binary-search-tree';
@@ -118,7 +115,7 @@ export default class BinaryTreeContainer extends React.Component<any, { app?: Ap
           app ? (
             <div>
               <div id="control-header" style={{ position: 'fixed' }}>
-                <ControlPanel app={app} />
+                {/* <ControlPanel app={app} /> */}
               </div>
               <BinaryTreePage app={app} />
             </div>

@@ -32,9 +32,7 @@ export default class AppLayout extends React.Component<{ onSceneLoaded: (a: App)
     this.app.canvas = canvas;
     this.renderFrame();
     this.setState({ sceneLoaded: true });
-
     this.props.onSceneLoaded(this.app);
-
   }
 
   public renderFrame() {

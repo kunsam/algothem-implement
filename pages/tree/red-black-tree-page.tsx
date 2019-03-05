@@ -1,16 +1,16 @@
 import { Modal } from 'antd';
-import * as React from 'react'
 import * as THREE from 'three'
+import * as React from 'react'
 import 'antd/lib/modal/style/index.css';
 import AppLayout from '../../layouts/app/app';
 import ObjectInspector from 'react-object-inspector';
-import { App, AppCanvas } from '../../layouts/app/app-interface';
 import FontManager from '../../src/view/font/font-manager';
 import { RBNode } from '../../src/tree/node/red-black-node';
-import { RedBlackTree } from '../../src/tree/red-black-tree';
-import { ControlPanel } from '../../components/red-black-page/control-panel';
-import { RedBlackTreeViewObject } from '../../src/view/tree/red-black-tree-viewobject';
 import { AppEventType } from '../../src/core/event-manager';
+import { RedBlackTree } from '../../src/tree/red-black-tree';
+import { App, AppCanvas } from '../../layouts/app/app-interface';
+import { RBPControlPanel } from '../../components/red-black-page/control-panel';
+import { RedBlackTreeViewObject } from '../../src/view/tree/red-black-tree-viewobject';
 
 
 export enum IRedBlackTreeEventType{
@@ -120,7 +120,7 @@ export default class RedBlackTreeContainer extends React.Component<any, { app?: 
           app ? (
             <div>
               <div id="control-header" style={{ position: 'fixed' }}>
-                <ControlPanel app={app} />
+                <RBPControlPanel app={app} />
               </div>
               <RedBlackTreePage app={app} />
             </div>

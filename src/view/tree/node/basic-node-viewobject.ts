@@ -55,7 +55,7 @@ export default class BasicNodeViewobject extends THREE.Object3D {
   public getSphereNode() {
     const geometry = new THREE.SphereGeometry( 30, 30, 30 );
     const mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial({
-      color: 0x808080,
+      color: 0x000000,
     }));
     mesh.userData.type = MeshType.node;
     mesh.userData.node = this.node;
