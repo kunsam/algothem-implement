@@ -3,6 +3,7 @@ import EventEmitter from 'events'
 
 
 export enum AppEventType {
+  sceneLoaded = 'sceneLoaded',
   renderFrame = 'renderFrame',
   operationDone = 'operationDone'
 }

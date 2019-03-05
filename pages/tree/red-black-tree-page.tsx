@@ -9,7 +9,7 @@ import { RBNode } from '../../src/tree/node/red-black-node';
 import { AppEventType } from '../../src/core/event-manager';
 import { RedBlackTree } from '../../src/tree/red-black-tree';
 import { App, AppCanvas } from '../../layouts/app/app-interface';
-import { RBPControlPanel } from '../../components/red-black-page/control-panel';
+import RBPControlPanel from '../../components/red-black-page/control-panel';
 import { RedBlackTreeViewObject } from '../../src/view/tree/red-black-tree-viewobject';
 
 
@@ -111,7 +111,6 @@ export default class RedBlackTreeContainer extends React.Component<any, { app?: 
     super(props);
     this.state = { app: undefined }
   }
-
   render() {
     const { app } = this.state;
     return (

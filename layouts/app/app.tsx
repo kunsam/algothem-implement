@@ -51,15 +51,7 @@ export default class AppLayout extends React.Component<{ onSceneLoaded: (a: App)
     const { sceneLoaded } = this.state;
     return (
       <div id="AppLayout">
-        {
-          sceneLoaded ? 
-            React.Children.map(this.props.children, (child: any) =>
-              {
-                return React.cloneElement(child, { app: this.app });
-              }
-            )
-           : null
-        }
+        { sceneLoaded ? this.props.children : null }
         <AppScene onDidMount={this.onSceneLoaded.bind(this)}/>
       </div>
     )
