@@ -5,9 +5,8 @@ import "./app.less"
 import * as React from 'react'
 import AppScene from "../scene/scene";
 import { App, AppCanvas } from "./app-interface";
-import { EventManager, AppEventType } from "../../src/core/event-manager";
 import FontManager from "../../src/view/font/font-manager";
-
+import { EventManager, AppEventType } from "../../src/core/event-manager";
 
 
 export default class AppLayout extends React.Component<{ onSceneLoaded: (a: App) => void }, any> {

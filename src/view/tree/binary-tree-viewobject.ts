@@ -3,36 +3,63 @@ import * as THREE from 'three';
 import FontManager from '../font/font-manager';
 import AnimatorBase from './animator/animator-base';
 import { AppEventType } from './../../core/event-manager';
-import RotatedAnimator from './animator/rotated-animator';
+import AnimatorManager from './animator/animator-manager';
 import { App } from './../../../layouts/app/app-interface';
-import ChangeParentAnimator from './animator/change-parent';
 import { BasicTreeNode } from './../../tree/node/basic-node';
-import ShowTextAnimator from './animator/show-text-animator';
 import BasicNodeViewobject from './node/basic-node-viewobject';
 import { BasicBinaryTree } from './../../tree/basic-binary-tree';
-import VisitedNodeAnimator from './animator/visited-node-animator';
-import { GlobalNodeDirtyFlows, NodeDirtyType } from './global-node-dirty-flows';
+import { GlobalNodeDirtyFlows } from './global-node-dirty-flows';
 
+export enum IBinaryTreeViewObjectEvent{
+  deleteNode = 'deleteNode',
+  addNode = 'addNode'
+}
 
 export class BinaryTreeViewObject extends THREE.Object3D {
   public tree: BasicBinaryTree;
 
   protected _app: App;
-  protected _nodeViewObjectMap: Map<number, BasicNodeViewobject> = new Map();
+  protected _animatorManager: AnimatorManager;
+  protected _nodeViewObjectMap: Map<number, BasicNodeViewobject>;
 
   protected _enterAnimating: boolean = false;
   protected _currentAcitiveAnimators?: Set<number>;
   protected _animatorFlows: AnimatorBase[][] = [];
 
-
   constructor(app: App, tree: BasicBinaryTree) {
     super();
     this._app = app;
     this.tree = tree;
+    this._nodeViewObjectMap = new Map();
     tree.levelOrderTraverse((node: BasicTreeNode) => {
       this.addNode(node);
       return undefined;
     });
+    this._animatorManager = new AnimatorManager(
+      this._nodeViewObjectMap,
+      this._app.eventManager,
+    );
+    this._initEvent();
+  }
+
+  private _initEvent() {
+    const onDeleteNode = (key: number) => {
+      this.deleteNode(key);
+    }
+    const onAddNode = (node: BasicTreeNode) => {
+      const trueNode = this.tree.search(node.key);
+      if (trueNode) {
+        this.addNode(trueNode);
+        const vo =this._nodeViewObjectMap.get(trueNode.key);
+        if (vo) {
+          vo.cloneNode = node;
+          vo.refresh();
+          vo.cloneNode = undefined;
+        }
+      }
+    }
+    this._app.eventManager.listen(IBinaryTreeViewObjectEvent.deleteNode, onDeleteNode.bind(this));
+    this._app.eventManager.listen(IBinaryTreeViewObjectEvent.addNode, onAddNode.bind(this));
   }
 
   protected getNewViewObject(node: BasicTreeNode) {
@@ -42,7 +69,6 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       this._nodeViewObjectMap,
     );
   }
-
 
   protected addNode(node: BasicTreeNode) {
     if (!this._nodeViewObjectMap.has(node.key)) {
@@ -113,88 +139,10 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     const dirtyNodesFlows = GlobalNodeDirtyFlows.dirtyFlows;
     dirtyNodesFlows.forEach(flowData => {
       logs.push(flowData.flow.map(n => ({ dt: n.data.type, node: n.node, data: n.data })));
-      const animators: AnimatorBase[] = [];
+      let animators: AnimatorBase[] = [];
       flowData.flow.forEach(info => {
-        switch (info.data.type) {
-          case NodeDirtyType.visited: {
-            if (!info.node) break;
-            const viewObject = this._nodeViewObjectMap.get(info.node.key);
-            if (viewObject) {
-              animators.push(new VisitedNodeAnimator(
-                info.node, viewObject
-              ));
-            }
-            break;
-          }
-          case NodeDirtyType.showText: {
-            if (!info.node) {
-              message.error(info.data.text, 1);
-            } else {
-              const viewObject = this._nodeViewObjectMap.get(info.node.key);
-              if (viewObject) {
-                const text = info.data && info.data.text;
-                const duration = info.data && info.data.duration;
-                if (text) {
-                  animators.push(new ShowTextAnimator({
-                    node: info.node,
-                    text: text,
-                    viewObject,
-                    duration: duration && parseInt(duration),
-                  }));
-                }
-              }
-            }
-            break;
-          }
-          case NodeDirtyType.changeParent: {
-
-            if (info.node && info.data.newParentKey) {
-              const oldParentKey = info.node && info.node.parent && info.node.parent.key;
-              if (!oldParentKey) {
-                break;
-              }
-              const viewObject = this._nodeViewObjectMap.get(info.node.key);
-              const oldParentViewObject = this._nodeViewObjectMap.get(oldParentKey);
-              const newParentViewObject = this._nodeViewObjectMap.get(info.data.newParentKey);
-              if (viewObject && newParentViewObject && oldParentViewObject) {
-                animators.push(new ShowTextAnimator({
-                  viewObject,
-                  node: info.node,
-                  text: 'Change Parent',
-                  duration: 40,
-                  positionOffset: new THREE.Vector3(30, -40),
-                }));
-                animators.push(new ChangeParentAnimator({
-                  viewObject,
-                  duration: 40,
-                  node: info.node,
-                  newParentViewObject,
-                  oldParentViewObject,
-                }));
-              }
-            }
-            break;
-          }
-          case NodeDirtyType.rightRotated:
-          case NodeDirtyType.leftRotated: {
-            if (!info.node) break;
-            const viewObject = this._nodeViewObjectMap.get(info.node.key);
-            const parentKey = info.node.parent && info.node.parent.key;
-            if (!parentKey) break;
-            if (viewObject) {
-              animators.push(new RotatedAnimator(
-                {
-                  viewObject,
-                  node: info.node,
-                  parentKey,
-                  dirtyType: info.data.type,
-                  viewObjectMap: this._nodeViewObjectMap,
-                })
-              );
-            }
-            break;
-          }
-        }
+        const infoAnimtors = this._animatorManager.getAnimators(info);
+        animators = animators.concat(infoAnimtors);
       });
       if (animators.length) {
         this._animatorFlows.push(animators);
@@ -203,7 +151,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     if (!this._animatorFlows.length) {
       this._app.eventManager.emit(AppEventType.operationDone);
     }
-    console.log(logs, this._animatorFlows.map(c => c), 'log')
+    console.log(logs, this._animatorFlows.map(c => c), 'log');
   }
 
   public leftRotate(key: number) {

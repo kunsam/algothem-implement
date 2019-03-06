@@ -82,7 +82,7 @@ export default class RotatedAnimator extends AnimatorBase {
       { center: childRotateCenter, initAngle: childInitAngle, radius: childRadius }
     );
 
-    // console.log(childRadius, childRotateCenter, childInitAngle, 'childInitAngle')
+    // console.log(childRadius, childRotateCenter, parentRotateCenter, childInitAngle, 'childInitAngle')
   }
 
   private _rotateNode(viewObject: BasicNodeViewobject, dirtyDirection: NodeDirtyType) {
@@ -98,10 +98,9 @@ export default class RotatedAnimator extends AnimatorBase {
     const y = center.y + radius * Math.sin(animateAngle + initAngle);
     const newPosition = new THREE.Vector3(x, y, viewObject.position.z);
     viewObject.updatePosition(newPosition);
-    viewObject.changeColor(0x00ff00);
     // if (this.currentFrame === 0) {
-    //   console.log(newPosition, nodeViewObject, 'nodeViewObjectnodeViewObject')
-    // }
+      // console.log(newPosition, viewObject.node.key, `newPosition${viewObject.node.key}`)
+    
     this._addText(viewObject);
   }
 
@@ -135,6 +134,7 @@ export default class RotatedAnimator extends AnimatorBase {
       return;
     }
     this._rotateNode(this._viewObject, this._dirtyType);
+    this._viewObject.changeColor(0x00ff00);
     this._rotateNode(this._parentViewObject, this._dirtyType);
     this._keepChildTrack(this._node.left);
     this._keepChildTrack(this._node.right);
@@ -187,9 +187,6 @@ export default class RotatedAnimator extends AnimatorBase {
       this._initRotateInfoMap.clear();
       this._viewObject.cloneNode = undefined;
       this._viewObject.resetColor();
-      if (this._parentViewObject) {
-        this._parentViewObject.resetColor();
-      }
       this._resetText();
     }
     return false;

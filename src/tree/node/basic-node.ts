@@ -39,13 +39,15 @@ export class BasicTreeNode {
     }
   }
 
-  public withDirtyWork (node: NBasicTreeNode, child: NBasicTreeNode, func: Function) {
+  public withDirtyWork (node: NBasicTreeNode, func: Function) {
     if (!node) {
-      this.addToFlow({
-        node: null,
-        dirtyType: NodeDirtyType.deleted,
-        data: { key: child && child.key }
-      });
+      // 这里不能加，应该还要查询是否加到了其它节点下
+      // 否则对应还要有个add操作
+      // this.addToFlow({
+      //   node: null,
+      //   dirtyType: NodeDirtyType.deleted,
+      //   data: { key: child && child.key }
+      // });
     }
     func();
     if(node) {
@@ -62,11 +64,10 @@ export class BasicTreeNode {
       // 绑定新的父子关系
       this.addToFlow({
         node: node,
+        data: { newParentKey: this.key },
         dirtyType: NodeDirtyType.changeParent,
-        data: { newParentKey: this.key }
       });
       node._parent = this;
-
     }
   }
 
@@ -75,7 +76,7 @@ export class BasicTreeNode {
   }
 
   protected setLeft(node: NBasicTreeNode) {
-    this.withDirtyWork(node, this._left, () => {
+    this.withDirtyWork(node, () => {
       this._left = node;
     });
   }
@@ -84,7 +85,7 @@ export class BasicTreeNode {
   }
 
   protected setRight(node: NBasicTreeNode) {
-    this.withDirtyWork(node, this._right, () => {
+    this.withDirtyWork(node, () => {
       this._right = node;
     });
   }

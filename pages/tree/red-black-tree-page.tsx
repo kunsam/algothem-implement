@@ -2,10 +2,10 @@
 import * as React from 'react'
 import { RedBlackTree } from '../../src/tree/red-black-tree';
 import { App, AppCanvas } from '../../layouts/app/app-interface';
+import { BinaryTreeViewObject } from '../../src/view/tree/binary-tree-viewobject';
 import { RedBlackTreeViewObject } from '../../src/view/tree/red-black-tree-viewobject';
 import RBPControlPanel from '../../components/control-panel/red-black-page-control-panel';
 import { ITreeEvent, WithTreePageBase, WithTreeContaier } from '../../layouts/tree-page/tree-page-base';
-import { BinaryTreeViewObject } from '../../src/view/tree/binary-tree-viewobject';
 import RedBlackTreeInfoPanel from '../../components/info-panel/red-black-tree/red-black-tree-info-panel';
 
 export enum IRedBlackTreeEventType{
@@ -50,16 +50,16 @@ export class PageComp extends WithTreePageBase() {
   }
 
   protected getTree() {
-  const redblacktree = new RedBlackTree();
-  redblacktree.insert(50);
-  redblacktree.insert(30);
-  redblacktree.insert(42);
-  redblacktree.insert(20);
-  redblacktree.insert(18);
-  redblacktree.insert(26);
-  redblacktree.insert(50);
-  redblacktree.insert(82);
-  return redblacktree
+    const redblacktree = new RedBlackTree();
+    redblacktree.insert(50);
+    redblacktree.insert(30);
+    redblacktree.insert(42);
+    redblacktree.insert(20);
+    redblacktree.insert(18);
+    redblacktree.insert(26);
+    redblacktree.insert(50);
+    redblacktree.insert(82);
+    return redblacktree
   }
 
   protected getInfoPanel() {
@@ -71,7 +71,7 @@ export class PageComp extends WithTreePageBase() {
   }
 
   protected onRenderFrame = (treevo: BinaryTreeViewObject, canvas: AppCanvas) => {
-    const rtreevo = treevo as RedBlackTreeViewObject
+    const rtreevo = treevo as RedBlackTreeViewObject;
     const maxDepthViewObject = rtreevo.getMaxDepthNodeViewObject();
     if (maxDepthViewObject) {
       canvas.grhelper.position.y = maxDepthViewObject.position.y - 200;

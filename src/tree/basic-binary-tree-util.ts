@@ -30,6 +30,9 @@ export default class BasicBinaryTreeUtil {
     const flow: NodeDataPair[] = [];
     while (!queue.empty()) {
       temp = queue.pop();
+      if (temp.key === key) {
+        break;
+      }
       if (!temp.left) {
         temp.left = new BasicTreeNode(key);
         saveDirtyFlows && flow.push({ node: temp.left, data: { type: NodeDirtyType.added } });
