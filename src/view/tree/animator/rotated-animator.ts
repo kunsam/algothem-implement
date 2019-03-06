@@ -10,68 +10,98 @@ import { BasicTreeNode, NBasicTreeNode } from './../../../tree/node/basic-node';
 export interface IRotateInfo{
   center: THREE.Vector3;
   initAngle: number;
+  radius: number;
+}
+
+export interface RotatedAnimatorProps {
+  duration?: number
+  parentKey: number
+  node: BasicTreeNode
+  dirtyType: NodeDirtyType
+  viewObject: BasicNodeViewobject
+  viewObjectMap: Map<number, BasicNodeViewobject> 
 }
 
 export default class RotatedAnimator extends AnimatorBase {
   private _dirtyType: NodeDirtyType;
-  private _viewObjectMap: Map<number, BasicNodeViewobject>;
+  private _parentKey: number;
+  private _parentViewObject?: BasicNodeViewobject;
   private _textMap: Map<number, THREE.Mesh> = new Map();
   private _initRotateInfoMap: Map<number, IRotateInfo> = new Map();
+  private _viewObjectMap: Map<number, BasicNodeViewobject>;
 
-  constructor(node: BasicTreeNode, viewObject: BasicNodeViewobject, dirtyType: NodeDirtyType, map: Map<number, BasicNodeViewobject>, duration?: number) {
-    super(node, viewObject, duration);
-    this._viewObjectMap = map;
+  constructor(props: RotatedAnimatorProps) {
+    super(props.node, props.viewObject, props.duration);
+    const { dirtyType, duration, parentKey } = props;
     this._dirtyType = dirtyType;
+    this._viewObjectMap = props.viewObjectMap;
+    this._parentKey = parentKey;
     if (!duration) {
       this.duration = 40;
     }
-    this._bindCloneNode();
+    this._initInfo();
   }
 
-  private _bindCloneNode() {
-    // this._viewObject.cloneNode = this._node;
+  private _getInitAngel(center: THREE.Vector3, position: THREE.Vector3, radius: number) {
+    if (!radius) return 0;
+    const centerHorizonOffset = center.clone().add(new THREE.Vector3(radius, 0, 0));
+    const offset = new THREE.Vector3().subVectors(centerHorizonOffset, position);
+    const oflenght = offset.length();
+    let angle = Math.acos((2 * radius * radius - oflenght * oflenght) / (2 * radius * radius));
+    if (offset.y > 0) {
+      angle = Math.PI * 2 - angle;
+    }
+    return angle;
   }
-
-  private _rotateNode(node: BasicTreeNode, dirtyDirection: NodeDirtyType, isOriginChild?: boolean) {
-    const nodeViewObject = this._viewObjectMap.get(node.key);
-    if (!nodeViewObject) {
+  private _initInfo() {
+    if (!this._parentViewObject) {
       return;
     }
-    const isLeftRotate = dirtyDirection === NodeDirtyType.leftRotated;
-    const radius = Math.sqrt(
-      Math.pow(BasicNodeViewobject.horizontalOffset / 2, 2) +
-      Math.pow(BasicNodeViewobject.verticalOffset / 2, 2)
+    const childPosition = this._viewObject.position;
+    const parentPosition = this._parentViewObject.position;
+    const dir2ChildOffset = new THREE.Vector3().subVectors(
+      childPosition,
+      parentPosition,
     );
-    const sign = isLeftRotate ? -1 : 1;
-    let initInfo = this._initRotateInfoMap.get(node.key);
+    const parentRotateCenter = parentPosition.clone().add(
+      dir2ChildOffset.clone().divideScalar(2)
+    );
+    const parentRadius = new THREE.Vector3().subVectors(parentRotateCenter, parentPosition).length();
+    const parentInitAngle = this._getInitAngel(parentRotateCenter, parentPosition, parentRadius);
+    this._initRotateInfoMap.set(
+      this._parentViewObject.node.key,
+      { center: parentRotateCenter, initAngle: parentInitAngle, radius: parentRadius }
+    );
+    const childRotateCenter = childPosition.clone().add(
+      new THREE.Vector3(dir2ChildOffset.x, -1 * dir2ChildOffset.y, dir2ChildOffset.z).divideScalar(2)
+    );
+    const childRadius = new THREE.Vector3().subVectors(childRotateCenter, childPosition).length();
+    const childInitAngle = this._getInitAngel(childRotateCenter, childPosition, childRadius);
+    this._initRotateInfoMap.set(
+      this._viewObject.node.key,
+      { center: childRotateCenter, initAngle: childInitAngle, radius: childRadius }
+    );
+
+    // console.log(childRadius, childRotateCenter, childInitAngle, 'childInitAngle')
+  }
+
+  private _rotateNode(viewObject: BasicNodeViewobject, dirtyDirection: NodeDirtyType) {
+    const isLeftRotate = dirtyDirection === NodeDirtyType.leftRotated;
+    const sign = isLeftRotate ? 1 : -1;
+    const initInfo = this._initRotateInfoMap.get(viewObject.node.key);
     if (!initInfo) {
-      const childSign = isOriginChild ? -1 : 1;
-      const initCircleCenter = nodeViewObject.position.clone().sub(new THREE.Vector3(
-        -1 * sign * BasicNodeViewobject.horizontalOffset / 2,
-        childSign * BasicNodeViewobject.verticalOffset / 2,
-        0,
-      ));
-      const distance = new THREE.Vector3().subVectors(
-        nodeViewObject.position,
-        initCircleCenter.clone().add(new THREE.Vector3(radius, 0, 0))
-      ).length();
-      let initAngle = childSign * Math.acos((2 * radius * radius - distance * distance) / (2 * radius * radius));
-      initInfo = {
-        center: initCircleCenter,
-        initAngle,
-      }
-      this._initRotateInfoMap.set(node.key, initInfo);
+      return;
     }
-    const animateAngle = -1 * sign * this.currentFrame * Math.PI / this.duration;
-    const x = initInfo.center.x + radius * Math.cos(animateAngle + initInfo.initAngle);
-    const y = initInfo.center.y + radius * Math.sin(animateAngle + initInfo.initAngle);
-    const newPosition = new THREE.Vector3(x, y, nodeViewObject.position.z);
-    // nodeViewObject 里的oarent
-    nodeViewObject.updatePosition(newPosition);
+    const { radius, center, initAngle } = initInfo;
+    const animateAngle = sign * this.currentFrame * Math.PI / this.duration;
+    const x = center.x + radius * Math.cos(animateAngle + initAngle);
+    const y = center.y + radius * Math.sin(animateAngle + initAngle);
+    const newPosition = new THREE.Vector3(x, y, viewObject.position.z);
+    viewObject.updatePosition(newPosition);
     // if (this.currentFrame === 0) {
     //   console.log(newPosition, nodeViewObject, 'nodeViewObjectnodeViewObject')
     // }
-    this._addText(node.key);
+    this._addText(viewObject);
   }
 
   private _keepChildTrack(node: NBasicTreeNode) {
@@ -96,34 +126,29 @@ export default class RotatedAnimator extends AnimatorBase {
   }
 
   private _rotate() {
-    const self = this._node;
-    const parent = self.parent;
-    if (!parent) {
+    if (!this._parentViewObject) {
+      this._parentViewObject = this._viewObjectMap.get(this._parentKey);
+      this._initInfo();
+    }
+    if (!this._parentViewObject) {
       return;
     }
-    const nodeViewObject = this._viewObjectMap.get(self.key);
-    const parentViewObject = this._viewObjectMap.get(parent.key);
-    if (!nodeViewObject || !parentViewObject) {
-      return;
+    this._rotateNode(this._viewObject, this._dirtyType);
+    this._rotateNode(this._parentViewObject, this._dirtyType);
+    this._keepChildTrack(this._node.left);
+    this._keepChildTrack(this._node.right);
+    const parent = this._node.parent;
+    if (parent) {
+      if (this._node.isOnLeft()) {
+        this._keepChildTrack(parent.right);
+      } else {
+        this._keepChildTrack(parent.left);
+      }
     }
-    this._rotateNode(self, this._dirtyType);
-    this._rotateNode(parent, this._dirtyType, true);
-    this._keepChildTrack(self.left);
-    this._keepChildTrack(self.right);
-    if (self.isOnLeft()) {
-      this._keepChildTrack(parent.right);
-    } else {
-      this._keepChildTrack(parent.left);
-    }
-    
   }
 
-  private _addText(nodeKey: number) {
-    if (this._textMap.has(nodeKey)) {
-      return;
-    }
-    const nodeViewObject = this._viewObjectMap.get(nodeKey);
-    if(!nodeViewObject) {
+  private _addText(nodeViewObject: BasicNodeViewobject) {
+    if (this._textMap.has(nodeViewObject.node.key)) {
       return;
     }
     const textGeo = new THREE.TextGeometry(`${
@@ -140,7 +165,7 @@ export default class RotatedAnimator extends AnimatorBase {
     text.position.y += 80;
     text.position.x += 60;
     nodeViewObject.add(text);
-    this._textMap.set(nodeKey, text);
+    this._textMap.set(nodeViewObject.node.key, text);
   }
 
   private _resetText() {

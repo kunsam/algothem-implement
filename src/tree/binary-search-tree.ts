@@ -20,12 +20,14 @@ export class BinarySearchTree extends BasicBinaryTree {
   }
 
   public search(key: number, addToFlow?: boolean) {
-    return BinarySearchTreeUtil.search(key, this.root, addToFlow);
+    const props = { key, root: this.root, addToFlow };
+    return BinarySearchTreeUtil.search(props);
   }
 
   public inorder() {
     return BinarySearchTreeUtil.inorderTraverse(this.root, (node) => {
       console.log('node key:', node.key);
+      return undefined;
     });
   }
  

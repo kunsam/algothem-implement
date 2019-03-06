@@ -10,12 +10,13 @@ import { RBNode } from '../../src/tree/node/red-black-node';
 import { AppEventType } from '../../src/core/event-manager';
 import { BinaryTreeViewObject } from '../../src/view/tree/binary-tree-viewobject';
 import { BinarySearchTree } from '../../src/tree/binary-search-tree';
+import BinartTreePageControlPanel from '../../components/control-panel/binary-tree-control-panel';
 
 
 export enum IBasicTreeEventType{
   onFind = 'onFind',
-  onInsert = 'ONINSERT',
-  onDelete = 'onDelete',
+  // onInsert = 'ONINSERT',
+  // onDelete = 'onDelete',
   onLeftRotate = 'onLeftRotate',
   onRightRotate = 'onRightRotate',
 }
@@ -29,14 +30,11 @@ export class BinaryTreePage extends React.Component<{app: App}> {
     }
 
     const eventManager = this.props.app.eventManager;
-    eventManager.listen(IBasicTreeEventType.onInsert, (key: number) => {
-      treeViewObject.insert(key);
+    eventManager.listen(IBasicTreeEventType.onLeftRotate, (key: number) => {
+      treeViewObject.leftRotate(key);
     });
-    eventManager.listen(IBasicTreeEventType.onDelete, (key: number) => {
-      // treeViewObject.delete(key);
-    });
-    eventManager.listen(IBasicTreeEventType.onFind, (key: number) => {
-      // treeViewObject.search(key);
+    eventManager.listen(IBasicTreeEventType.onRightRotate, (key: number) => {
+      treeViewObject.rightRotate(key);
     });
 
     const { renderer, camera } = this.props.app.canvas;
@@ -61,6 +59,7 @@ export class BinaryTreePage extends React.Component<{app: App}> {
             content: (<div><ObjectInspector data={node} /></div>)
           });
         }
+
       }
     }
   }
@@ -115,7 +114,7 @@ export default class BinaryTreeContainer extends React.Component<any, { app?: Ap
           app ? (
             <div>
               <div id="control-header" style={{ position: 'fixed' }}>
-                {/* <ControlPanel app={app} /> */}
+                {<BinartTreePageControlPanel app={app} />}
               </div>
               <BinaryTreePage app={app} />
             </div>

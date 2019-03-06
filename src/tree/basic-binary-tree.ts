@@ -38,16 +38,16 @@ export class BasicBinaryTree {
     return result;
   }
 
-  public rotateLeft(node: NBasicTreeNode) {
+  public rotateLeft(node: NBasicTreeNode, showDirty?: boolean) {
     if (!node) return node;
-    const props = { node, root: this.root };
-    BinarySearchTreeUtil.transformUtil().rotateLeft({ node, root: this.root });
+    const props = { node, root: this.root, showDirty };
+    BinarySearchTreeUtil.transformUtil().rotateLeft(props);
     this.root = props.root;
   }
 
-  public rotateRight(node: NBasicTreeNode) {
+  public rotateRight(node: NBasicTreeNode, showDirty?: boolean) {
     if (!node) return node;
-    const props = { node, root: this.root };
+    const props = { node, root: this.root, showDirty };
     BinarySearchTreeUtil.transformUtil().rotateRight(props);
     this.root = props.root;
   }

@@ -78,16 +78,23 @@ export default class BasicNodeViewobject extends THREE.Object3D {
     this.textMesh = text;
   }
 
-  public getConnectLineToParent() {
-    const position = this.position;
-    const vparentPosition = this.getParentPosition();
-    if (!vparentPosition) {
-      return;
+  public getConnectLineToParent(connectToPoition?: THREE.Vector3) {
+    if (!connectToPoition) {
+      const vparentPosition = this.getParentPosition();
+      if (!vparentPosition) {
+        if (this.lineMesh) {
+          this.remove(this.lineMesh)
+          this.lineMesh = undefined;
+        }
+        return
+      }
+      connectToPoition = vparentPosition;
     }
-    var geometry = new THREE.Geometry();
+    connectToPoition = new THREE.Vector3().subVectors(connectToPoition!, this.position);
+    const geometry = new THREE.Geometry();
     geometry.vertices.push(
       new THREE.Vector3(),
-      new THREE.Vector3().subVectors(vparentPosition, position)
+      connectToPoition,
     );
     const line = new THREE.Line( geometry, new THREE.LineBasicMaterial({
       color: 0x000000,
@@ -106,11 +113,11 @@ export default class BasicNodeViewobject extends THREE.Object3D {
     this.updatePosition(this.getNodePosition());
   }
 
-  public refreshLineMesh() {
+  public refreshLineMesh(connectToPoition?: THREE.Vector3) {
     if (this.lineMesh) {
       this.remove(this.lineMesh);
     }
-    this.getConnectLineToParent();
+    this.getConnectLineToParent(connectToPoition);
     if (this.lineMesh) {
       this.add(this.lineMesh);
     }

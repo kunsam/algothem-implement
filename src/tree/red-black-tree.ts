@@ -37,7 +37,8 @@ export class RedBlackTree extends BinarySearchTree {
   }
 
   public search(key: number, isAddtoDirty?: boolean): NRBNode {
-    return BinarySearchTreeUtil.search(key, this.root, isAddtoDirty) as NRBNode;
+    const props = { key, root: this.root, isAddtoDirty };
+    return BinarySearchTreeUtil.search(props) as NRBNode;
   }
 
   public delete(key: number) {

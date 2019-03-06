@@ -91,11 +91,11 @@ export class BinarySearchTreeTransformUtil{
     return inorder;
   }
 
-  public static rotateLeft(props: { node: BasicTreeNode, root: NBasicTreeNode }) {
+  public static rotateLeft(props: { node: BasicTreeNode, root: NBasicTreeNode, showDirty?: boolean }) {
     // 1. update node right and its relationship
     // 2. update node right parent and its relationship
     // 3. update node parent and its relationship
-    const { node } = props;
+    const { node, showDirty } = props;
     if (!node.right) {
       GlobalNodeDirtyFlows.addToDirtyFlows([{
         node: null,
@@ -104,14 +104,20 @@ export class BinarySearchTreeTransformUtil{
       }]);
       return;
     }
-    let right = node.right; 
+
+    let right = node.right;
+    if (showDirty) {
+      GlobalNodeDirtyFlows.startSequence();
+    }
     node.right = right && right.left || null;
-    if (node.parent === null) {
-      props.root = right; 
-    } else if (node === node.parent.left) {
-      node.parent.left = right; 
+    if (!node.parent) {
+      props.root = right;
     } else {
-      node.parent.right = right; 
+      if (node === node.parent.left) {
+        node.parent.left = right;
+      } else {
+        node.parent.right = right; 
+      }
     }
     if (right) {
       right.left = node; 
@@ -121,12 +127,16 @@ export class BinarySearchTreeTransformUtil{
       node: cloneDeep(node),
       dirtyType: NodeDirtyType.leftRotated,
     }]);
+    
+    if (showDirty) {
+      GlobalNodeDirtyFlows.endSequence('BinarySearchTreeConstructUtil.rotateLeft');
+    }
+
 
   }
 
-
-  public static rotateRight(props: { node: BasicTreeNode, root: NBasicTreeNode }) {
-    const { node } = props;
+  public static rotateRight(props: { node: BasicTreeNode, root: NBasicTreeNode, showDirty?: boolean }) {
+    const { node, showDirty } = props;
     if (!node.left) {
       GlobalNodeDirtyFlows.addToDirtyFlows([{
         node: null,
@@ -136,22 +146,32 @@ export class BinarySearchTreeTransformUtil{
       return;
     }
 
-    let left = node.left; 
+    let left = node.left;
+    if (showDirty) {
+      GlobalNodeDirtyFlows.startSequence();
+    }
     node.left = left && left.right || null;
     if (node.parent === null) {
       props.root = left; 
-    } else if (node === node.parent.left) {
-      node.parent.left = left; 
-    } else {
-      node.parent.right = left;
+    }  else {
+      if (node === node.parent.left) {
+        node.parent.left = left; 
+      } else {
+        node.parent.right = left;
+      }
     }
     if (left) {
       left.right = node; 
     }
+
     GlobalNodeDirtyFlows.addToDirtyFlows([{
       node: cloneDeep(node),
       dirtyType: NodeDirtyType.rightRotated,
     }]);
+
+    if (showDirty) {
+      GlobalNodeDirtyFlows.endSequence('BinarySearchTreeConstructUtil.rotateRight');
+    }
   }
 }
 
@@ -259,7 +279,8 @@ export class BinarySearchTreeUtil{
     return root;
   }
 
-  public static search(key: number, root: NBasicTreeNode, addToFlow?: boolean): NBasicTreeNode {
+  public static search(props: { key: number, root: NBasicTreeNode, addToFlow?: boolean }): NBasicTreeNode {
+    const { key, root, addToFlow } = props;
     if (root === null) {
       return null;
     }
@@ -272,9 +293,9 @@ export class BinarySearchTreeUtil{
       ], 'BinarySearchTreeUtil.search');
     }
     if (key > root.key) {
-      return this.search(key, root.right);
+      return this.search({ key, root: root.right });
     }
-    return this.search(key, root.left);
+    return this.search({ key, root: root.left });
   }
 
   public static searchIteratively(key: number, root: NBasicTreeNode, addToFlow?: boolean): NBasicTreeNode {

@@ -73,13 +73,17 @@ export class RedBlackTreeViewObject extends BinaryTreeViewObject {
           case NodeDirtyType.leftRotated: {
             if (!info.node) break;
             const viewObject = this._nodeViewObjectMap.get(info.node.key);
+            const parentKey = info.node.parent && info.node.parent.key;
+            if (!parentKey) break;
+            console.log(info.node, parentKey,viewObject, 'viewObjectviewObject' )
             if (viewObject) {
-              animators.push(new RotatedAnimator(
-                info.node,
+              animators.push(new RotatedAnimator({
+                parentKey,
                 viewObject,
-                info.data.type,
-                this._nodeViewObjectMap,
-              ));
+                node: info.node,
+                dirtyType: info.data.type,
+                viewObjectMap: this._nodeViewObjectMap
+              }));
             }
             break;
           }

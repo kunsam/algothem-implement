@@ -39,9 +39,13 @@ export class BasicTreeNode {
     }
   }
 
-  public withDirtyWork (node: NBasicTreeNode, func: Function) {
+  public withDirtyWork (node: NBasicTreeNode, child: NBasicTreeNode, func: Function) {
     if (!node) {
-      this.addToFlow({ node: this, dirtyType: NodeDirtyType.deleted });
+      this.addToFlow({
+        node: null,
+        dirtyType: NodeDirtyType.deleted,
+        data: { key: child && child.key }
+      });
     }
     func();
     if(node) {
@@ -56,8 +60,13 @@ export class BasicTreeNode {
         this._parent = null;
       }
       // 绑定新的父子关系
+      this.addToFlow({
+        node: node,
+        dirtyType: NodeDirtyType.changeParent,
+        data: { newParentKey: this.key }
+      });
       node._parent = this;
-      this.addToFlow({ node: this, dirtyType: NodeDirtyType.changeNode });
+
     }
   }
 
@@ -66,7 +75,7 @@ export class BasicTreeNode {
   }
 
   protected setLeft(node: NBasicTreeNode) {
-    this.withDirtyWork(node, () => {
+    this.withDirtyWork(node, this._left, () => {
       this._left = node;
     });
   }
@@ -75,7 +84,7 @@ export class BasicTreeNode {
   }
 
   protected setRight(node: NBasicTreeNode) {
-    this.withDirtyWork(node, () => {
+    this.withDirtyWork(node, this._right, () => {
       this._right = node;
     });
   }

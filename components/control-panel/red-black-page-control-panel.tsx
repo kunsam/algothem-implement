@@ -1,12 +1,10 @@
-
 import * as React from 'react'
+import { WithOperation } from './control-panel';
 import { App } from '../../layouts/app/app-interface';
-import { WithOperation } from '../control-panel/control-panel';
 import { ButtonInputPair } from '../button-input-pair/button-input-pair';
 import { IRedBlackTreeEventType } from '../../pages/tree/red-black-tree-page';
 
-
-class RBPControlPanel extends React.Component<
+class Component extends React.Component<
   {
     app: App,
     operating: boolean,
@@ -67,4 +65,5 @@ class RBPControlPanel extends React.Component<
 
 }
 
-export default WithOperation(RBPControlPanel);
+const RBPControlPanel  = WithOperation(Component);
+export default RBPControlPanel;

@@ -27,6 +27,7 @@ export enum NodeDirtyType {
   added = 'added',
   deleted = 'deleted',
   changeNode = 'changeNode',
+  changeParent = 'changeParent',
   showText = 'showText',
   leftRotated = 'leftRotated',
   rightRotated = 'rightRotated',
@@ -62,12 +63,15 @@ export class GlobalNodeDirtyFlows {
   public static addToDirtyFlows(flow: NodeDirtyDataGroup[], name?: string) {
     if (!flow.length) return;
     if (GlobalNodeDirtyFlows.disabled) return;
-
+    if (GlobalNodeDirtyFlows.isStartSequence) {
+      GlobalNodeDirtyFlows.sequenceFlow = GlobalNodeDirtyFlows.sequenceFlow.concat(flow);
+      return;
+    }
     const result: NodeDataPair[] = [];
     flow.forEach(pair => {
       switch (pair.dirtyType) {
         case NodeDirtyType.deleted: {
-          if (pair.data.key !== undefined) {
+          if (pair.data && pair.data.key !== undefined) {
             result.push({
               node: null,
               data: { key: pair.data.key, type: NodeDirtyType.deleted },

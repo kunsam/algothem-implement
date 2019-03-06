@@ -12,6 +12,7 @@ export interface ShowTextAnimatorProps{
   node: BasicTreeNode;
   viewObject: BasicNodeViewobject;
   parameters?: THREE.TextGeometryParameters;
+  positionOffset?: THREE.Vector3;
 }
 
 export default class ShowTextAnimator extends AnimatorBase {
@@ -38,8 +39,9 @@ export default class ShowTextAnimator extends AnimatorBase {
       textGeo,
       new THREE.MeshBasicMaterial({ color: 0x000000 })
     );
-    textMesh.position.y += 20;
-    textMesh.position.x += 50;
+    const positionOffset = this._props.positionOffset;
+    textMesh.position.y += positionOffset ? positionOffset.y : 20;
+    textMesh.position.x += positionOffset ? positionOffset.x : 50;
     this._textMesh = textMesh;
     this._viewObject.add(textMesh);
   }
