@@ -1,9 +1,10 @@
+
 import { message } from 'antd';
 import 'antd/lib/message/style/index.css';
+
+import { AppBase } from './../../../layouts/app/app';
 import { BinarySearchTree } from './../../tree/binary-search-tree';
-import { AppEventType } from './../../core/event-manager';
 import { RedBlackTree } from '../../tree/red-black-tree';
-import { App } from './../../../layouts/app/app-interface';
 import BasicNodeViewobject from './node/basic-node-viewobject';
 import { BinaryTreeViewObject } from './binary-tree-viewobject';
 import { GlobalNodeDirtyFlows, NodeDirtyType } from './global-node-dirty-flows';
@@ -13,7 +14,7 @@ export class BinarySearchTreeViewObject extends BinaryTreeViewObject {
 
   protected __maxDepthViewObject?: BasicNodeViewobject;
 
-  constructor(app: App, tree: RedBlackTree) {
+  constructor(app: AppBase, tree: RedBlackTree) {
     super(app, tree);
   }
 
@@ -25,7 +26,7 @@ export class BinarySearchTreeViewObject extends BinaryTreeViewObject {
     GlobalNodeDirtyFlows.reset();
     if (this.gettree.search(key)) {
       message.error(`${key}已存在!`, 0.8)
-      this._app.eventManager.emit(AppEventType.operationDone);
+      this._app.eventManager.commandEvents().emitOperationDone();
       return;
     }
     this.gettree.insert(key);
@@ -35,7 +36,7 @@ export class BinarySearchTreeViewObject extends BinaryTreeViewObject {
   public delete(key: number) {
     GlobalNodeDirtyFlows.reset();
     if (!this.gettree.root) {
-      this._app.eventManager.emit(AppEventType.operationDone);
+      this._app.eventManager.commandEvents().emitOperationDone();
       message.error('不存在树', 0.8);
       return;
     }
@@ -53,7 +54,7 @@ export class BinarySearchTreeViewObject extends BinaryTreeViewObject {
     const findNode = this.gettree.search(key, true);
     if (!findNode) {
       message.error(`${key}不存在!`, 0.8);
-      this._app.eventManager.emit(AppEventType.operationDone);
+      this._app.eventManager.commandEvents().emitOperationDone();
     } else {
       this._dityFlowsAnimationFlow();
     }

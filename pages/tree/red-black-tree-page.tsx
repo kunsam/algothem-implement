@@ -1,7 +1,8 @@
 
 import * as React from 'react'
 import { RedBlackTree } from '../../src/tree/red-black-tree';
-import { App, AppCanvas } from '../../layouts/app/app-interface';
+import { AppBase } from '../../layouts/app/app';
+import { AppCanvas } from '../../layouts/app/app-interface';
 import { BinaryTreeViewObject } from '../../src/view/tree/binary-tree-viewobject';
 import { RedBlackTreeViewObject } from '../../src/view/tree/red-black-tree-viewobject';
 import RBPControlPanel from '../../components/control-panel/red-black-page-control-panel';
@@ -18,7 +19,7 @@ export enum IRedBlackTreeEventType{
 
 export class PageComp extends WithTreePageBase() {
  
-  protected createTreeViewObject(app: App) {
+  protected createTreeViewObject(app: AppBase) {
     return new RedBlackTreeViewObject(app, this.getTree())
   }
 

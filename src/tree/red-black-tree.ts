@@ -7,7 +7,6 @@ import { NRBNode, RBNode, RBColor } from './node/red-black-node';
 import { GlobalNodeDirtyFlows, NodeDirtyType } from './../view/tree/global-node-dirty-flows';
 
 
-
 // 还可以实现的操作包括 join / union / difference
 export class RedBlackTree extends BinarySearchTree {
   public root: NRBNode;
@@ -37,7 +36,7 @@ export class RedBlackTree extends BinarySearchTree {
   }
 
   public search(key: number, isAddtoDirty?: boolean): NRBNode {
-    const props = { key, root: this.root, isAddtoDirty };
+    const props = { key, root: this.root, addToFlow: isAddtoDirty };
     return BinarySearchTreeUtil.search(props) as NRBNode;
   }
 
@@ -47,7 +46,6 @@ export class RedBlackTree extends BinarySearchTree {
     if (!node) return null;
     this._deleteNode(node);
   }
-
 
 
   private _swapColor(node1: NRBNode, node2: NRBNode) {

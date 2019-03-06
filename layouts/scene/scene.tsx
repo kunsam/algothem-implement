@@ -1,4 +1,4 @@
-import * as THREE from 'three'
+import * as THREE from 'three';
 import React, { Component } from 'react'
 import { AppCanvas } from '../app/app-interface.js';
 import { OrbitControls } from '../../static/js/orbitcontrol.js';
@@ -68,56 +68,16 @@ export default class AppScene extends Component<{ onDidMount: (a: AppCanvas) => 
     controls.addEventListener('change', () => {
       renderer.render( scene, camera );
     });
-
-    document.addEventListener('keydown', this.onKeyDown.bind(this));
-
     this.props.onDidMount({ scene, camera, renderer, grhelper: helper });
   }
-
-  public onKeyDown(e: KeyboardEvent) {
-    const camera = this.camera;
-    if (!camera) return;
-    const OFFSET = 10;
-    const cameraDirection = camera.getWorldDirection(new THREE.Vector3()).normalize();
-    switch (e.keyCode) {
-      case 87: { // w
-        camera.position.add(cameraDirection.clone().multiplyScalar(OFFSET));
-        break;
-      }
-      case 83: { // s
-        camera.position.add(cameraDirection.clone().multiplyScalar(-OFFSET));
-        break;
-      }
-      case 65: { // a
-        const crossVector = cameraDirection.clone().cross(new THREE.Vector3(0, 1, 0));
-        camera.position.add(
-          crossVector.normalize().multiplyScalar(-OFFSET)
-        );
-        break;
-      }
-      case 68: { // d
-        const crossVector = cameraDirection.clone().cross(new THREE.Vector3(0, 1, 0));
-        camera.position.add(
-          crossVector.normalize().multiplyScalar(OFFSET)
-        );
-        break;
-      }
-    }
-  }
-
-
 
   componentDidMount = () => {
     const container = document.getElementById('app-canvas');
     if (container) {
       this.initScene(container);
-
     }
   }
 
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.onKeyDown);
-  }
   
   render() {
     return (

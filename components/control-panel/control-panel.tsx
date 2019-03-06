@@ -1,12 +1,13 @@
 
 import * as React from 'react'
 import './control-panel.less';
-import { App } from '../../layouts/app/app-interface';
-import { AppEventType } from '../../src/core/event-manager';
+import { Button } from 'antd';
+import { AppBase } from '../../layouts/app/app';
+
 
 export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) {
 
-  return class extends React.Component<{ app: App }, { operating: boolean }> {
+  return class extends React.Component<{ app: AppBase }, { operating: boolean }> {
     private _operationDone: boolean;
     constructor(props: any) {
       super(props);
@@ -17,7 +18,7 @@ export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) 
     }
     componentDidMount() {
       if (this.props.app) {
-        this.props.app.eventManager.listen(AppEventType.operationDone, this.onOperationDone.bind(this));
+        this.props.app.eventManager.commandEvents().listenOperationDone(this.onOperationDone.bind(this));
       }
     }
 
@@ -44,6 +45,10 @@ export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) 
             operating={this.state.operating}
             onOperationConfirm={this.onOperationConfirm.bind(this)}
           />
+          <div className="right-global-panel">
+            <Button type="primary" icon="play-circle">回放[shortcut: P]</Button>
+          </div>
+          <div style={{ clear: 'both' }}/>
         </div>
       )
     }

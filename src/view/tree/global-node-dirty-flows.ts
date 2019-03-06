@@ -42,6 +42,13 @@ export class GlobalNodeDirtyFlows {
 
   public static dirtyFlows: NodeDataPairFlow[] = [];
 
+  // public static _lastDirtyFlows: NodeDataPairFlow[] = []; // for look back
+  // public static lastDirtyFlows() {
+  //   const copy = GlobalNodeDirtyFlows._lastDirtyFlows.map(d => d);
+  //   GlobalNodeDirtyFlows._lastDirtyFlows = [];
+  //   return copy;
+  // }
+
   public static reset() {
     GlobalNodeDirtyFlows.disabled = false;
     GlobalNodeDirtyFlows.isStartSequence = false;

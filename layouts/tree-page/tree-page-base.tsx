@@ -2,19 +2,20 @@
 
 import './tree-page.less'
 import 'antd/lib/modal/style/index.css';
-
 import { Modal } from 'antd';
-import * as THREE from 'three'
 import * as React from 'react'
-import AppLayout from '../app/app';
+import * as THREE from 'three'
+import AppLayout, { AppBase } from '../app/app';
+import { AppCanvas } from '../app/app-interface';
 import ObjectInspector from 'react-object-inspector';
-import { App, AppCanvas } from '../app/app-interface';
 import FontManager from '../../src/view/font/font-manager';
-import { AppEventType } from '../../src/core/event-manager';
+import { EventManager } from '../../src/core/event/event-manager';
+import { AppBaseEventType } from '../../src/core/contants/events';
 import { BasicBinaryTree } from '../../src/tree/basic-binary-tree';
 import { BinaryTreeViewObject } from '../../src/view/tree/binary-tree-viewobject';
 import BinartTreePageControlPanel from '../../components/control-panel/binary-tree-control-panel';
 import BinaryTreeInfoPanel from '../../components/info-panel/baisc-binary-tree/baisc-binary-tree-info-panel';
+import { EventContext } from '../../src/core/event/context/event-context';
 
 
 export interface ITreeEvent {
@@ -33,27 +34,27 @@ export function WithTreePageBase() {
       const tree = new BasicBinaryTree();
       return tree;
     }
-    protected createTreeViewObject(app: App): BinaryTreeViewObject {
+    protected createTreeViewObject(app: AppBase): BinaryTreeViewObject {
       return new BinaryTreeViewObject(app, this.getTree());
     }
     protected getInfoPanel() {
       return <BinaryTreeInfoPanel />
     }
-    protected getControlPanel(app: App) {
+    protected getControlPanel(app: AppBase) {
       return <BinartTreePageControlPanel app={app} />
     }
     private _initEvent(treeViewObject: BinaryTreeViewObject, ) {
       if (!this.props.app.canvas) {
         throw new Error('this.props.app.canvas')
       }
-      const eventManager = this.props.app.eventManager;
+      const eventManager: EventManager = this.props.app.eventManager;
       this.getEvent().forEach(data => {
-        eventManager.listen(data.eventType, (...args: []) => {
-          data.listener(treeViewObject, ...args);
+        eventManager.commandEvents().listen(data.eventType, (context: EventContext) => {
+          data.listener(treeViewObject, context.args);
         });
-      })
+      });
       const { renderer, camera } = this.props.app.canvas;
-      eventManager.listen(AppEventType.renderFrame, () => {
+      eventManager.appEvents().listen(AppBaseEventType.renderFrame, () => {
         treeViewObject.update();
         this.onRenderFrame(treeViewObject, this.props.app.canvas!);
       });
@@ -94,10 +95,10 @@ export function WithTreePageBase() {
     render() {
       return (
         <div>
-          <div id="control-header" style={{ position: 'fixed' }}>
+          <div id="control-header" style={{ position: 'fixed', width: '100%' }}>
             {this.getControlPanel(this.props.app)}
           </div>
-          <div id="info-panel-bottom" style={{ position: 'fixed', bottom: 0 }}>
+          <div id="info-panel-bottom" style={{ position: 'fixed', width: '100%', bottom: 0 }}>
             {this.getInfoPanel()}
           </div>
         </div>
@@ -108,7 +109,7 @@ export function WithTreePageBase() {
 
 
 export function WithTreeContaier(TreePage: React.ComponentClass<any, any>) {
-  return class extends React.Component<any, { app?: App }> {
+  return class extends React.Component<any, { app?: AppBase }> {
     constructor(props: any) {
       super(props);
       this.state = { app: undefined }
@@ -116,7 +117,7 @@ export function WithTreeContaier(TreePage: React.ComponentClass<any, any>) {
     render() {
       const { app } = this.state;
       return (
-        <AppLayout onSceneLoaded={(app: App) => this.setState({ app }) }>
+        <AppLayout onSceneLoaded={(app: AppBase) => this.setState({ app }) }>
           {
             app ? (
               <div>

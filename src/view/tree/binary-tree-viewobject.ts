@@ -2,13 +2,15 @@ import { message } from 'antd';
 import * as THREE from 'three';
 import FontManager from '../font/font-manager';
 import AnimatorBase from './animator/animator-base';
-import { AppEventType } from './../../core/event-manager';
+import { AppBase } from './../../../layouts/app/app';
 import AnimatorManager from './animator/animator-manager';
-import { App } from './../../../layouts/app/app-interface';
 import { BasicTreeNode } from './../../tree/node/basic-node';
 import BasicNodeViewobject from './node/basic-node-viewobject';
 import { BasicBinaryTree } from './../../tree/basic-binary-tree';
 import { GlobalNodeDirtyFlows } from './global-node-dirty-flows';
+import { AppCommandEventType } from './../../core/contants/events';
+import { EventContext } from '../../core/event/context/event-context';
+
 
 export enum IBinaryTreeViewObjectEvent{
   deleteNode = 'deleteNode',
@@ -18,7 +20,7 @@ export enum IBinaryTreeViewObjectEvent{
 export class BinaryTreeViewObject extends THREE.Object3D {
   public tree: BasicBinaryTree;
 
-  protected _app: App;
+  protected _app: AppBase;
   protected _animatorManager: AnimatorManager;
   protected _nodeViewObjectMap: Map<number, BasicNodeViewobject>;
 
@@ -26,7 +28,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
   protected _currentAcitiveAnimators?: Set<number>;
   protected _animatorFlows: AnimatorBase[][] = [];
 
-  constructor(app: App, tree: BasicBinaryTree) {
+  constructor(app: AppBase, tree: BasicBinaryTree) {
     super();
     this._app = app;
     this.tree = tree;
@@ -43,10 +45,12 @@ export class BinaryTreeViewObject extends THREE.Object3D {
   }
 
   private _initEvent() {
-    const onDeleteNode = (key: number) => {
+    const onDeleteNode = (context: EventContext) => {
+      const key = context.args.key;
       this.deleteNode(key);
     }
-    const onAddNode = (node: BasicTreeNode) => {
+    const onAddNode = (context: EventContext) => {
+      const node = context.args.node;
       const trueNode = this.tree.search(node.key);
       if (trueNode) {
         this.addNode(trueNode);
@@ -58,8 +62,18 @@ export class BinaryTreeViewObject extends THREE.Object3D {
         }
       }
     }
-    this._app.eventManager.listen(IBinaryTreeViewObjectEvent.deleteNode, onDeleteNode.bind(this));
-    this._app.eventManager.listen(IBinaryTreeViewObjectEvent.addNode, onAddNode.bind(this));
+    this._app.eventManager.commandEvents().listen(
+      IBinaryTreeViewObjectEvent.deleteNode,
+      onDeleteNode.bind(this)
+    );
+    this._app.eventManager.commandEvents().listen(
+      IBinaryTreeViewObjectEvent.addNode,
+      onAddNode.bind(this)
+    );
+    this._app.eventManager.commandEvents().listen(
+      AppCommandEventType.rePlay, () => {
+      this._dityFlowsAnimationFlow();
+    });
   }
 
   protected getNewViewObject(node: BasicTreeNode) {
@@ -127,8 +141,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     } else {
       if (this._enterAnimating) {
         this._enterAnimating = false;
-        this._app.eventManager.emit(AppEventType.operationDone);
-        GlobalNodeDirtyFlows.reset();
+        this._app.eventManager.commandEvents().emitOperationDone();
       }
     }
   }
@@ -149,7 +162,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       }
     });
     if (!this._animatorFlows.length) {
-      this._app.eventManager.emit(AppEventType.operationDone);
+      this._app.eventManager.commandEvents().emitOperationDone();
     }
     console.log(logs, this._animatorFlows.map(c => c), 'log');
   }

@@ -1,9 +1,8 @@
-
-
+import { AppBase } from '../../layouts/app/app';
 import { BasicBinaryTree } from '../../src/tree/basic-binary-tree';
 import { BinaryTreeViewObject } from '../../src/view/tree/binary-tree-viewobject';
 import { WithTreePageBase, WithTreeContaier, ITreeEvent } from '../../layouts/tree-page/tree-page-base';
-import { App } from '../../layouts/app/app-interface';
+
 
 
 export enum IBasicTreeEventType{
@@ -44,7 +43,7 @@ class BinaryTreePage extends WithTreePageBase() {
     return tree;
    }
 
-   protected createTreeViewObject(app: App) {
+   protected createTreeViewObject(app: AppBase) {
     return new BinaryTreeViewObject(app, this.getTree());
    }
  

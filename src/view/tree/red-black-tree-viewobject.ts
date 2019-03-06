@@ -1,10 +1,10 @@
 import { message } from 'antd';
 import 'antd/lib/message/style/index.css';
+
 import FontManager from '../font/font-manager';
+import { AppBase } from './../../../layouts/app/app';
 import { RBNode } from '../../tree/node/red-black-node';
 import { RedBlackTree } from '../../tree/red-black-tree';
-import { AppEventType } from './../../core/event-manager';
-import { App } from './../../../layouts/app/app-interface';
 import RecolorNodeAnimator from './animator/recolor-animator';
 import { RBNodeDirtyType } from './../../tree/node/red-black-node';
 import RedBlackNodeViewObject from './node/red-black-node-viewobject';
@@ -14,7 +14,7 @@ import { GlobalNodeDirtyFlows, NodeDirtyType, NodeDataPair } from './global-node
 
 export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
 
-  constructor(app: App, tree: RedBlackTree) {
+  constructor(app: AppBase, tree: RedBlackTree) {
     super(app, tree);
     this._regiterAnimator();
   }
@@ -113,7 +113,7 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
     GlobalNodeDirtyFlows.reset();
     if (this.rtree.search(key)) {
       message.error(`${key}已存在!`, 0.8)
-      this._app.eventManager.emit(AppEventType.operationDone);
+      this._app.eventManager.commandEvents().emitOperationDone();
       return;
     }
     this.rtree.insert(key);
@@ -124,7 +124,7 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
   public delete(key: number) {
     GlobalNodeDirtyFlows.reset();
     if (!this.rtree.root) {
-      this._app.eventManager.emit(AppEventType.operationDone);
+      this._app.eventManager.commandEvents().emitOperationDone();
       message.error('不存在树', 0.8);
       return;
     }
@@ -141,10 +141,16 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
   public search(key: number) {
     GlobalNodeDirtyFlows.reset();
     const findNode = this.rtree.search(key, true);
+
     if (!findNode) {
       message.error(`${key}不存在!`, 0.8);
-      this._app.eventManager.emit(AppEventType.operationDone);
+      this._app.eventManager.commandEvents().emitOperationDone();
     } else {
+      GlobalNodeDirtyFlows.addToDirtyFlows([{
+        node: findNode,
+        data: { text: 'target!' },
+        dirtyType: NodeDirtyType.showText,
+      }])
       this._dityFlowsAnimationFlow();
     }
   }

@@ -1,13 +1,13 @@
 import * as React from 'react'
-import { App } from '../../../layouts/app/app-interface';
-import { IBinarySearchTreeEventType } from '../../../pages/tree/binary-search-tree-page';
-import { ButtonInputPair } from '../../button-input-pair/button-input-pair';
 import { WithOperation } from '../control-panel';
+import { AppBase } from '../../../layouts/app/app';
+import { ButtonInputPair } from '../../button-input-pair/button-input-pair';
+import { IBinarySearchTreeEventType } from '../../../pages/tree/binary-search-tree-page';
 
 
 class Component extends React.Component<
   {
-    app: App,
+    app: AppBase,
     operating: boolean,
     onOperationConfirm: Function,
   }
@@ -15,13 +15,19 @@ class Component extends React.Component<
 
   public onConfirmLeftRotate(key: string) {
     if (!key) return;
-    this.props.app.eventManager.emit(IBinarySearchTreeEventType.onLeftRotate, parseInt(key));
+    this.props.app.eventManager.commandEvents().emitKeyEvent(
+      IBinarySearchTreeEventType.onLeftRotate,
+      key,
+    );
     this.props.onOperationConfirm();
   }
 
   public onConfirmRightRotate(key: string) {
     if (!key) return;
-    this.props.app.eventManager.emit(IBinarySearchTreeEventType.onRightRotate, parseInt(key));
+    this.props.app.eventManager.commandEvents().emitKeyEvent(
+      IBinarySearchTreeEventType.onRightRotate,
+      key,
+    );
     this.props.onOperationConfirm();
   }
   

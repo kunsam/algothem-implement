@@ -1,36 +1,32 @@
 import * as React from 'react'
 import { WithOperation } from './control-panel';
-import { App } from '../../layouts/app/app-interface';
+import { AppBase } from '../../layouts/app/app';
 import { ButtonInputPair } from '../button-input-pair/button-input-pair';
 import { IRedBlackTreeEventType } from '../../pages/tree/red-black-tree-page';
 
 class Component extends React.Component<
   {
-    app: App,
+    app: AppBase,
     operating: boolean,
     onOperationConfirm: Function,
   }
 > {
 
-
-  public onInsert(e: React.ChangeEvent<HTMLInputElement>) {
-    if (!e.target.value) {
-      return;
-    }
-  }
-
   public onConfirmFind(key: string) {
-    this.props.app.eventManager.emit(IRedBlackTreeEventType.onFind, parseInt(key));
+    if (!key) return;
+    this.props.app.eventManager.commandEvents().emitKeyEvent(IRedBlackTreeEventType.onFind, key);
     this.props.onOperationConfirm();
   }
 
   public onConfirmInsert(key: string) {
-    this.props.app.eventManager.emit(IRedBlackTreeEventType.onInsert, parseInt(key));
+    if (!key) return;
+    this.props.app.eventManager.commandEvents().emitKeyEvent(IRedBlackTreeEventType.onInsert, key);
     this.props.onOperationConfirm();
   }
 
   public onConfirmDelete(key: string) {
-    this.props.app.eventManager.emit(IRedBlackTreeEventType.onDelete, parseInt(key));
+    if (!key) return;
+    this.props.app.eventManager.commandEvents().emitKeyEvent(IRedBlackTreeEventType.onDelete, key);
     this.props.onOperationConfirm();
   }
   
@@ -43,7 +39,7 @@ class Component extends React.Component<
           type="number"
           disabled={operating}
           onConfirm={this.onConfirmInsert.bind(this)}
-          onInputChange={this.onInsert.bind(this)}
+          onInputChange={() => {}}
         />
         <ButtonInputPair
           label="删除"

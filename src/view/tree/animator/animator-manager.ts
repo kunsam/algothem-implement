@@ -11,7 +11,7 @@ import ShowTextAnimator from './show-text-animator';
 import { NodeDataPair } from '../global-node-dirty-flows';
 import VisitedNodeAnimator from './visited-node-animator';
 import { NodeDirtyType } from './../global-node-dirty-flows';
-import { EventManager } from './../../../core/event-manager';
+import { EventManager } from '../../../core/event/event-manager';
 import { BasicTreeNode } from '../../../tree/node/basic-node';
 import BasicNodeViewobject from '../node/basic-node-viewobject';
 import { IBinaryTreeViewObjectEvent } from '../binary-tree-viewobject';
@@ -156,7 +156,10 @@ export default class AnimatorManager {
           new BasicTreeNode(info.data.key),
           viewobject,
           () => {
-            this._eventManager.emit(IBinaryTreeViewObjectEvent.deleteNode, info.data.key);
+            this._eventManager.commandEvents().emitNodeEvent(
+              IBinaryTreeViewObjectEvent.deleteNode,
+              { key: info.data.key },
+            );
           }
         ));
       }
@@ -205,7 +208,10 @@ export default class AnimatorManager {
             info.node,
             new BasicNodeViewobject(info.node, FontManager.getFont('helv')),
             () => {
-              this._eventManager.emit(IBinaryTreeViewObjectEvent.addNode, info.node);
+              this._eventManager.commandEvents().emitNodeEvent(
+                IBinaryTreeViewObjectEvent.addNode,
+                { node: info.node },
+              );
             }
           ));
         }

@@ -1,7 +1,6 @@
-
 import AnimatorBase from "./animator-base";
-import { BasicTreeNode, NBasicTreeNode } from './../../../tree/node/basic-node';
 import BasicNodeViewobject from '../node/basic-node-viewobject';
+import { BasicTreeNode, NBasicTreeNode } from './../../../tree/node/basic-node';
 
 
 export interface ChangeParentAnimatorProps{

@@ -1,4 +1,3 @@
-import { EventManager } from './../../src/core/event-manager';
 import * as THREE from 'three';
 
 export interface AppCanvas{
@@ -8,7 +7,7 @@ export interface AppCanvas{
   grhelper: THREE.GridHelper;
 }
 
-export interface App{
-  eventManager: EventManager;
-  canvas?: AppCanvas;
-}
+// export interface App{
+//   eventManager: EventManager;
+//   canvas?: AppCanvas;
+// }
