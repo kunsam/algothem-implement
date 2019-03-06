@@ -5,13 +5,13 @@ import AnimatorBase from './animator/animator-base';
 import { AppEventType } from './../../core/event-manager';
 import RotatedAnimator from './animator/rotated-animator';
 import { App } from './../../../layouts/app/app-interface';
-import ShowTextAnimator from './animator/show-text-animator';
+import ChangeParentAnimator from './animator/change-parent';
 import { BasicTreeNode } from './../../tree/node/basic-node';
+import ShowTextAnimator from './animator/show-text-animator';
 import BasicNodeViewobject from './node/basic-node-viewobject';
 import { BasicBinaryTree } from './../../tree/basic-binary-tree';
 import VisitedNodeAnimator from './animator/visited-node-animator';
 import { GlobalNodeDirtyFlows, NodeDirtyType } from './global-node-dirty-flows';
-import ChangeParentAnimator from './animator/change-parent';
 
 
 export class BinaryTreeViewObject extends THREE.Object3D {

@@ -5,8 +5,9 @@ import './button-input-pair.less';
 export interface ButtonInputPairProps{
   type?: string;
   label: string;
+  className?: string;
   disabled?: boolean;
-  onConfirm: (key: number) => void;
+  onConfirm: (value: string) => void;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -25,14 +26,15 @@ export class ButtonInputPair extends React.Component<ButtonInputPairProps, any> 
 
   public onClick() {
     if (this.state.value) {
-      this.props.onConfirm(parseInt(this.state.value));
+      this.props.onConfirm(this.state.value);
       this.setState({ value: '' });
     }
   }
 
   render() {
+    const { className } = this.props;
     return (
-      <div className="ButtonInputPair">
+      <div className={`ButtonInputPair ${className}`}>
         <Input
           type={this.props.type}
           value={this.state.value}

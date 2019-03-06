@@ -98,6 +98,7 @@ export default class RotatedAnimator extends AnimatorBase {
     const y = center.y + radius * Math.sin(animateAngle + initAngle);
     const newPosition = new THREE.Vector3(x, y, viewObject.position.z);
     viewObject.updatePosition(newPosition);
+    viewObject.changeColor(0x00ff00);
     // if (this.currentFrame === 0) {
     //   console.log(newPosition, nodeViewObject, 'nodeViewObjectnodeViewObject')
     // }
@@ -185,6 +186,10 @@ export default class RotatedAnimator extends AnimatorBase {
     } else if (this.currentFrame >= this.duration) {
       this._initRotateInfoMap.clear();
       this._viewObject.cloneNode = undefined;
+      this._viewObject.resetColor();
+      if (this._parentViewObject) {
+        this._parentViewObject.resetColor();
+      }
       this._resetText();
     }
     return false;

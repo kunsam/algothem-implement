@@ -19,25 +19,25 @@ class Component extends React.Component<
     }
   }
 
-  public onConfirmFind(key: number) {
-    this.props.app.eventManager.emit(IRedBlackTreeEventType.onFind, key);
+  public onConfirmFind(key: string) {
+    this.props.app.eventManager.emit(IRedBlackTreeEventType.onFind, parseInt(key));
     this.props.onOperationConfirm();
   }
 
-  public onConfirmInsert(key: number) {
-    this.props.app.eventManager.emit(IRedBlackTreeEventType.onInsert, key);
+  public onConfirmInsert(key: string) {
+    this.props.app.eventManager.emit(IRedBlackTreeEventType.onInsert, parseInt(key));
     this.props.onOperationConfirm();
   }
 
-  public onConfirmDelete(key: number) {
-    this.props.app.eventManager.emit(IRedBlackTreeEventType.onDelete, key);
+  public onConfirmDelete(key: string) {
+    this.props.app.eventManager.emit(IRedBlackTreeEventType.onDelete, parseInt(key));
     this.props.onOperationConfirm();
   }
   
   render() {
     const { operating } = this.props;
     return (
-      <div>
+      <div className="red-black-page-control-panel">
         <ButtonInputPair
           label="插入"
           type="number"

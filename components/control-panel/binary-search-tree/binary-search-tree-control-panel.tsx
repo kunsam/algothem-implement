@@ -1,9 +1,9 @@
 import * as React from 'react'
-import { WithOperation } from './control-panel';
-import { App } from '../../layouts/app/app-interface';
-import { ButtonInputPair } from '../button-input-pair/button-input-pair';
-import { IBasicTreeEventType } from '../../pages/tree/basic-binary-tree-page';
-import "./style/binary-tree-control-panel.less"
+import { App } from '../../../layouts/app/app-interface';
+import { IBinarySearchTreeEventType } from '../../../pages/tree/binary-search-tree-page';
+import { ButtonInputPair } from '../../button-input-pair/button-input-pair';
+import { WithOperation } from '../control-panel';
+
 
 class Component extends React.Component<
   {
@@ -15,20 +15,20 @@ class Component extends React.Component<
 
   public onConfirmLeftRotate(key: string) {
     if (!key) return;
-    this.props.app.eventManager.emit(IBasicTreeEventType.onLeftRotate, parseInt(key));
+    this.props.app.eventManager.emit(IBinarySearchTreeEventType.onLeftRotate, parseInt(key));
     this.props.onOperationConfirm();
   }
 
   public onConfirmRightRotate(key: string) {
     if (!key) return;
-    this.props.app.eventManager.emit(IBasicTreeEventType.onRightRotate, parseInt(key));
+    this.props.app.eventManager.emit(IBinarySearchTreeEventType.onRightRotate, parseInt(key));
     this.props.onOperationConfirm();
   }
   
   render() {
     const { operating } = this.props;
     return (
-      <div className="binary-tree-control-panel">
+      <div className="binary-search-tree-control-panel">
         <ButtonInputPair
           label="左旋"
           type="number"
@@ -49,5 +49,5 @@ class Component extends React.Component<
 
 }
 
-const BinartTreePageControlPanel  = WithOperation(Component);
-export default BinartTreePageControlPanel;
+const BinarySearchTreeControlPanel = WithOperation(Component);
+export default BinarySearchTreeControlPanel;

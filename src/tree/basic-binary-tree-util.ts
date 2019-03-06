@@ -76,6 +76,87 @@ export default class BasicBinaryTreeUtil {
     return root;
   }
 
+  public static rotateLeft(props: { node: BasicTreeNode, root: NBasicTreeNode, showDirty?: boolean }) {
+    // 1. update node right and its relationship
+    // 2. update node right parent and its relationship
+    // 3. update node parent and its relationship
+    const { node, showDirty } = props;
+    if (!node.right) {
+      GlobalNodeDirtyFlows.addToDirtyFlows([{
+        node: null,
+        dirtyType: NodeDirtyType.showMessage,
+        data: { text: 'null parent', messageType: 'error' }
+      }]);
+      return;
+    }
+
+    let right = node.right;
+    if (showDirty) {
+      GlobalNodeDirtyFlows.startSequence();
+    }
+    node.right = right && right.left || null;
+    if (!node.parent) {
+      props.root = right;
+    } else {
+      if (node === node.parent.left) {
+        node.parent.left = right;
+      } else {
+        node.parent.right = right; 
+      }
+    }
+    if (right) {
+      right.left = node; 
+    }
+
+    GlobalNodeDirtyFlows.addToDirtyFlows([{
+      node: cloneDeep(node),
+      dirtyType: NodeDirtyType.leftRotated,
+    }]);
+    
+    if (showDirty) {
+      GlobalNodeDirtyFlows.endSequence('BasicBinaryTreeUtil.rotateLeft');
+    }
+
+  }
+
+  public static rotateRight(props: { node: BasicTreeNode, root: NBasicTreeNode, showDirty?: boolean }) {
+    const { node, showDirty } = props;
+    if (!node.left) {
+      GlobalNodeDirtyFlows.addToDirtyFlows([{
+        node: null,
+        dirtyType: NodeDirtyType.showMessage,
+        data: { text: 'null parent', messageType: 'error' }
+      }]);
+      return;
+    }
+
+    let left = node.left;
+    if (showDirty) {
+      GlobalNodeDirtyFlows.startSequence();
+    }
+    node.left = left && left.right || null;
+    if (node.parent === null) {
+      props.root = left; 
+    }  else {
+      if (node === node.parent.left) {
+        node.parent.left = left; 
+      } else {
+        node.parent.right = left;
+      }
+    }
+    if (left) {
+      left.right = node; 
+    }
+
+    GlobalNodeDirtyFlows.addToDirtyFlows([{
+      node: cloneDeep(node),
+      dirtyType: NodeDirtyType.rightRotated,
+    }]);
+
+    if (showDirty) {
+      GlobalNodeDirtyFlows.endSequence('BasicBinaryTreeUtil.rotateRight');
+    }
+  }
 
   // https://en.wikipedia.org/wiki/Threaded_binary_tree
   /**
@@ -233,6 +314,7 @@ export function checkMorrisTraversal() {
   root.left.right = new BasicTreeNode(5);
   BasicBinaryTreeUtil.morrisTraversal(root, (node) => {
     console.log('node:', node.key);
+    return undefined;
   });
   // expect 4 2 5 1 3
 }

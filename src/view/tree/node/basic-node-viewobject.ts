@@ -18,6 +18,8 @@ export default class BasicNodeViewobject extends THREE.Object3D {
   public nodeMesh: THREE.Mesh = new THREE.Mesh();
   public textMesh: THREE.Mesh = new THREE.Mesh();
 
+  private _oldNodeMaterial: THREE.Material;
+
   public static verticalOffset = 160;
   public static horizontalOffset = 80;
   public static originPosition = new THREE.Vector3(0, 400, 0);
@@ -31,6 +33,19 @@ export default class BasicNodeViewobject extends THREE.Object3D {
     this.add(this.nodeMesh);
     this.add(this.textMesh);
     this.refresh();
+    this._oldNodeMaterial = this.nodeMesh.material as THREE.Material;
+  }
+
+  public changeColor(color: number) {
+    if (this.nodeMesh) {
+      (this.nodeMesh.material as THREE.MeshPhongMaterial).color.setHex(color);
+    }
+  }
+
+  public resetColor() {
+    (this.nodeMesh.material as THREE.MeshPhongMaterial).color.setHex(
+      (this._oldNodeMaterial as THREE.MeshPhongMaterial).color.getHex()
+    );
   }
 
   public getParentPosition() {

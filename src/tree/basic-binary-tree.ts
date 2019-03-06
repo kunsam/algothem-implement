@@ -41,14 +41,14 @@ export class BasicBinaryTree {
   public rotateLeft(node: NBasicTreeNode, showDirty?: boolean) {
     if (!node) return node;
     const props = { node, root: this.root, showDirty };
-    BinarySearchTreeUtil.transformUtil().rotateLeft(props);
+    BasicBinaryTreeUtil.rotateLeft(props);
     this.root = props.root;
   }
 
   public rotateRight(node: NBasicTreeNode, showDirty?: boolean) {
     if (!node) return node;
     const props = { node, root: this.root, showDirty };
-    BinarySearchTreeUtil.transformUtil().rotateRight(props);
+    BasicBinaryTreeUtil.rotateRight(props);
     this.root = props.root;
   }
 
