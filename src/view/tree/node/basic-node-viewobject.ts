@@ -139,7 +139,7 @@ export default class BasicNodeViewobject extends THREE.Object3D {
       }
       return;
     }
-    connectToPoition = new THREE.Vector3().subVectors(connectToPoition!, this.position);
+    connectToPoition = new THREE.Vector3().subVectors(connectToPoition, this.position);
     const geometry = new THREE.Geometry();
     geometry.vertices.push(
       new THREE.Vector3(),

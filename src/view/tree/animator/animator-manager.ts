@@ -85,14 +85,14 @@ export default class AnimatorManager {
       if (viewObject && newParentViewObject && oldParentViewObject) {
         animators.push(new ShowTextAnimator({
           viewObject,
-          duration: 40,
+          duration: 25,
           node: info.node,
           text: 'Change Parent',
           positionOffset: new THREE.Vector3(30, -40),
         }));
         animators.push(new ChangeParentAnimator({
           viewObject,
-          duration: 40,
+          duration: 25,
           node: info.node,
           newParentViewObject,
           oldParentViewObject,
@@ -119,6 +119,7 @@ export default class AnimatorManager {
           viewObject,
           node: info.node,
           dirtyType: info.data.type,
+          duration: info.data.duration,
           viewObjectMap: this._nodeViewObjectMap,
         })
       );

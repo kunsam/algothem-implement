@@ -54,9 +54,8 @@ class Component extends React.Component<
     return (
       <TreeSelect
         size="small"
-        showSearch
-        style={{ width: 200, marginLeft: 10 }}
         placeholder="choose a tree"
+        style={{ width: 200, marginLeft: 10 }}
         onSelect={this.onSelectTree.bind(this)}
       >
         {this.getTreeSelections()}
