@@ -3,6 +3,8 @@ import * as React from 'react'
 import './control-panel.less';
 import { Button } from 'antd';
 import { AppBase } from '../../layouts/app/app';
+import { AppCommandEventType } from '../../src/core/contants/events';
+import { KeyboardEventContext } from '../../src/core/event/context/keyboard-event-context';
 
 
 export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) {
@@ -19,6 +21,11 @@ export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) 
     componentDidMount() {
       if (this.props.app) {
         this.props.app.eventManager.commandEvents().listenOperationDone(this.onOperationDone.bind(this));
+        this.props.app.eventManager.keyboardEvents().listenKeyDown((context: KeyboardEventContext) => {
+          if (context.args && context.args.keyCode === 80) {
+            this.onReplay();
+          }
+        });
       }
     }
 
@@ -36,6 +43,13 @@ export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) 
       });
     }
 
+    public onReplay() {
+      if (this.props.app) {
+        this.props.app.eventManager.commandEvents().emitEvent(
+          AppCommandEventType.rePlay
+        );
+      }
+    }
 
     render() {
       return (
@@ -46,7 +60,9 @@ export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) 
             onOperationConfirm={this.onOperationConfirm.bind(this)}
           />
           <div className="right-global-panel">
-            <Button type="primary" icon="play-circle">回放[shortcut: P]</Button>
+            <Button type="primary" icon="play-circle" onClick={this.onReplay.bind(this)}>
+              回放[shortcut: P]
+            </Button>
           </div>
           <div style={{ clear: 'both' }}/>
         </div>

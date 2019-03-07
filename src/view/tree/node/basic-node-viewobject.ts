@@ -29,7 +29,7 @@ export default class BasicNodeViewobject extends THREE.Object3D {
     this.node = node;
     this._viewObjectMap = map;
     this.getSphereNode();
-    this.getTextMesh(node.key, font);
+    node.key && this.getTextMesh(node.key, font);
     this.add(this.nodeMesh);
     this.add(this.textMesh);
     this.refresh();

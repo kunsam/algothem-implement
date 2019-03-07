@@ -40,13 +40,6 @@ export default class AppLayout extends React.Component<{ onSceneLoaded: (a: App)
     FontManager.registerdFrontPathMap.set('helv', '/static/helv-font.json');
   }
 
-  componentDidMount = () => {
-    document.addEventListener('keydown', (e :KeyboardEvent) => {
-      // this.app.eventManager.keyBoardEvent.emitKeyDowm(e);
-    })
-
-  }
-  
   public onSceneLoaded = (canvas: AppCanvas) => {
     this.app.canvas = canvas;
     this.renderFrame();
@@ -70,6 +63,9 @@ export default class AppLayout extends React.Component<{ onSceneLoaded: (a: App)
   }
 
   public onKeyDown(e: KeyboardEvent) {
+
+    this.app.eventManager.keyboardEvents().emitKeyDown(e);
+
     const camera = this.app.canvas && this.app.canvas.camera;
     if (!camera) return;
     const OFFSET = 10;

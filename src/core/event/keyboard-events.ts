@@ -41,14 +41,14 @@ export class KeyboardEvents extends Events {
   }
 
   public emitKeyUp(e: KeyboardEvent): void {
-    this.emit(KeyBoardEventTypes.KeyboardKeyUp, e);
+    this.emit(KeyBoardEventTypes.KeyboardKeyUp, new KeyboardEventContext(e));
   }
 
   public emitKeyPressed(e: KeyboardEvent): void {
-    this.emit(KeyBoardEventTypes.KeyboardKeyPressed, e);
+    this.emit(KeyBoardEventTypes.KeyboardKeyPressed, new KeyboardEventContext(e));
   }
 
   public emitKeyDown(e: KeyboardEvent): void {
-    this.emit(KeyBoardEventTypes.KeyboardKeyDown, e);
+    this.emit(KeyBoardEventTypes.KeyboardKeyDown, new KeyboardEventContext(e));
   }
 }

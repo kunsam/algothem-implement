@@ -1,10 +1,9 @@
+import { AppBase } from './../../../../layouts/app/app';
 import { EventContext } from './event-context';
-import { App } from './../../../../layouts/app/app-interface';
-
 
 
 export class KeyboardEventContext extends EventContext {
-  constructor(args: KeyboardEvent, app?: App) {
+  constructor(args: KeyboardEvent, app?: AppBase) {
     super(args, app);
   }
 

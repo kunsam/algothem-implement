@@ -16,6 +16,14 @@ export class CommandEvents extends Events {
     );
   }
 
+  public emitEvent(eventType:string, data?: any) {
+    this.emit(
+      eventType,
+      new EventContext(data)
+    );
+  }
+
+
   public emitOperationDone() {
     this.emit(
       AppCommandEventType.operationDone,

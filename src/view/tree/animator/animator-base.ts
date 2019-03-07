@@ -4,9 +4,11 @@ import BasicNodeViewobject from '../node/basic-node-viewobject';
 
 export default class AnimatorBase {
   public duration = 20;
-  protected _node: BasicTreeNode;
+  public _node: BasicTreeNode;
   public currentFrame: number = 0;
   protected _viewObject: BasicNodeViewobject;
+
+  // protected _initViewObjectData: any;
 
   constructor(node: BasicTreeNode, viewObject: BasicNodeViewobject, duration?: number) {
     this._node = node;
@@ -15,6 +17,10 @@ export default class AnimatorBase {
     if (duration) {
       this.duration = duration;
     }
+  }
+
+  public reset() {
+    this.currentFrame = 0;
   }
 
   public animate () {
