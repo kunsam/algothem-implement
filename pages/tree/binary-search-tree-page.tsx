@@ -49,7 +49,7 @@ class BinarySeachTreePage extends WithTreePageBase() {
     ]
   }
 
-  protected createTreeViewObject(app: App): BinaryTreeViewObject {
+  protected createTreeViewObject(app: AppBase): BinaryTreeViewObject {
     return new BinaryTreeViewObject(app, this.getTree());
   }
 

@@ -49,6 +49,14 @@ class Component extends React.Component<
           onConfirm={this.onConfirmRightRotate.bind(this)}
           onInputChange={() => {}}
         />
+        {/* <ButtonInputPair
+          className=""
+          label="以levelOrder设置树"
+          type="number"
+          disabled={operating}
+          onConfirm={this.onConfirmRightRotate.bind(this)}
+          onInputChange={() => {}}
+        /> */}
       </div>
     )
   }
