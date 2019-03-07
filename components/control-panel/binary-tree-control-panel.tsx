@@ -1,9 +1,20 @@
-import * as React from 'react'
 import "./style/binary-tree-control-panel.less"
+import "antd/lib/tree-select/style/index.css"
+import "antd/lib/select/style/index.css"
+
+import * as React from 'react'
+import { TreeSelect } from 'antd';
 import { WithOperation } from './control-panel';
 import { AppBase } from '../../layouts/app/app';
+import { BasicBinaryTree } from '../../src/tree/basic-binary-tree';
+import GetMockBinaryTree from '../../src/tree/mock/binary-tree-mock';
 import { ButtonInputPair } from '../button-input-pair/button-input-pair';
 import { IBasicTreeEventType } from '../../pages/tree/basic-binary-tree-page';
+import { AppCommandEventType } from "../../src/core/contants/events";
+
+const MOCK_MAP: Map<string, BasicBinaryTree[]> = new Map();
+MOCK_MAP.set('leftRotate', GetMockBinaryTree.getLeftRotateMock());
+MOCK_MAP.set('rightRotate', GetMockBinaryTree.getRightRotateMock());
 
 
 class Component extends React.Component<
@@ -14,6 +25,70 @@ class Component extends React.Component<
   }
 > {
 
+  private _currentSelectTree?: string;
+
+  public getTreeSelections() {
+    let tree: React.ReactNode[] = [];
+    MOCK_MAP.forEach((data, key) => {
+      tree.push(
+        <TreeSelect.TreeNode key={`tree${key}`} value={key} title={key}>
+        {
+          data.map((_, index) => (
+            <TreeSelect.TreeNode
+              key={`tree${key}${index}`}
+              value={`tree-${key}-${index}`}
+              title={`tree-${key}-${index}`}
+            >
+              树{index}
+            </TreeSelect.TreeNode>
+          ))
+        }
+        </TreeSelect.TreeNode>
+      )
+    });
+    return tree;
+  }
+
+  public getTreeSelect() {
+    // GetMockBinaryTree
+    return (
+      <TreeSelect
+        size="small"
+        showSearch
+        style={{ width: 200, marginLeft: 10 }}
+        placeholder="choose a tree"
+        onSelect={this.onSelectTree.bind(this)}
+      >
+        {this.getTreeSelections()}
+      </TreeSelect>
+    )
+  }
+
+  public onSelectTree(value: string) {
+
+    if (!value) return;
+    if (this._currentSelectTree === value) return;
+
+    const values = value.split('-');
+    if (values.length < 3) {
+      return;
+    }
+    const type = values[1];
+    const index = parseInt(values[2]);
+    if (type === undefined || index === NaN) {
+      return;
+    }
+    const treeArray = MOCK_MAP.get(type);
+    if (treeArray && treeArray[index]) {
+      this._currentSelectTree = value;
+      this.props.app.eventManager.commandEvents().emitEvent(
+        AppCommandEventType.onSelectTree,
+        treeArray[index],
+      );
+    }
+
+  }
+  
   public onConfirmLeftRotate(key: string) {
     if (!key) return;
     this.props.app.eventManager.commandEvents().emitKeyEvent(IBasicTreeEventType.onLeftRotate, key);
@@ -44,6 +119,7 @@ class Component extends React.Component<
           onConfirm={this.onConfirmRightRotate.bind(this)}
           onInputChange={() => {}}
         />
+        {this.getTreeSelect()}
       </div>
     )
   }

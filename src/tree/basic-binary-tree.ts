@@ -2,7 +2,6 @@
 import Stack from '../stack/stack';
 import Queue from '../queue/queue';
 import BasicBinaryTreeUtil from './basic-binary-tree-util';
-import { BinarySearchTreeUtil } from './binary-search-tree-util';
 import { BasicTreeNode, NBasicTreeNode, VisitNodeFunction } from './node/basic-node';
 
 

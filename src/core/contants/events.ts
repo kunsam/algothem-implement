@@ -18,6 +18,7 @@ export enum AppCommandEventType {
   rePlay = 'rePlay',
   sceneLoaded = 'sceneLoaded',
   operationDone = 'operationDone',
+  onSelectTree = 'onSelectTree',
 }
 
 export enum KeyBoardEventTypes {

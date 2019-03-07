@@ -52,6 +52,25 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     this._saveViewObjects();
   }
 
+  public reloadTreeViewObject(tree: BasicBinaryTree) {
+    this.tree = tree;
+    this.remove(...this.children);
+    this._nodeViewObjectMap.clear();
+    tree.levelOrderTraverse((node: BasicTreeNode) => {
+      this.addNode(node);
+      return undefined;
+    });
+    this._updateViewObjectsRelation(true);
+    this._lastNodeViewObjectMap.clear();
+    this._saveViewObjects();
+    this._enterAnimating = false;
+    this._animatorFlows = [];
+    if (this._currentAcitiveAnimators) {
+      this._currentAcitiveAnimators = undefined;
+    }
+  }
+  
+
   private _saveViewObjects() {
     this._nodeViewObjectMap.forEach(vo => {
       this._lastNodeViewObjectMap.set(vo.node.key, {
@@ -113,6 +132,12 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       AppCommandEventType.rePlay, () => {
       this.onRelayAnimate();
     });
+    this._app.eventManager.commandEvents().listen(
+      AppCommandEventType.onSelectTree,
+      (context: EventContext) => {
+        this.reloadTreeViewObject(context.args as BasicBinaryTree);
+      }
+    );
   }
 
   protected getNewViewObject(node: BasicTreeNode) {
