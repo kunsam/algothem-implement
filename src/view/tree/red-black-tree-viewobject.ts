@@ -45,7 +45,6 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
     return new RedBlackNodeViewObject(
       node,
       FontManager.getFont('helv'),
-      this._nodeViewObjectMap,
     );
   }
 

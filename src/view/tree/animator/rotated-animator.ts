@@ -23,12 +23,12 @@ export interface RotatedAnimatorProps {
 }
 
 export default class RotatedAnimator extends AnimatorBase {
-  private _dirtyType: NodeDirtyType;
   private _parentKey: number;
+  private _dirtyType: NodeDirtyType;
   private _parentViewObject?: BasicNodeViewobject;
   private _textMap: Map<number, THREE.Mesh> = new Map();
-  private _initRotateInfoMap: Map<number, IRotateInfo> = new Map();
   private _viewObjectMap: Map<number, BasicNodeViewobject>;
+  private _initRotateInfoMap: Map<number, IRotateInfo> = new Map();
 
   constructor(props: RotatedAnimatorProps) {
     super(props.node, props.viewObject, props.duration);
@@ -185,7 +185,7 @@ export default class RotatedAnimator extends AnimatorBase {
       return true;
     } else if (this.currentFrame >= this.duration) {
       this._initRotateInfoMap.clear();
-      this._viewObject.cloneNode = undefined;
+      // this._viewObject.cloneNode = undefined;
       this._viewObject.resetColor();
       this._resetText();
     }

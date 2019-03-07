@@ -4,8 +4,8 @@ import { RBColor, RBNode } from './../../../tree/node/red-black-node';
 
 export default class RedBlackNodeViewObject extends BasicNodeViewobject {
 
-  constructor(node: RBNode, font: THREE.Font, map?: Map<number, RedBlackNodeViewObject>) {
-    super(node, font, map);
+  constructor(node: RBNode, font: THREE.Font) {
+    super(node, font);
   }
 
   public getSphereNode() {

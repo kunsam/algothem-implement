@@ -6,9 +6,7 @@ export default class AnimatorBase {
   public duration = 20;
   public _node: BasicTreeNode;
   public currentFrame: number = 0;
-  protected _viewObject: BasicNodeViewobject;
-
-  // protected _initViewObjectData: any;
+  public _viewObject: BasicNodeViewobject;
 
   constructor(node: BasicTreeNode, viewObject: BasicNodeViewobject, duration?: number) {
     this._node = node;

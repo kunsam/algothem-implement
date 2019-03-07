@@ -7,12 +7,15 @@ export enum MeshType {
   text = 'text',
   line = 'line',
 }
+
+export type NBasicNodeViewobject = BasicNodeViewobject | undefined;
+
+
+
 export default class BasicNodeViewobject extends THREE.Object3D {
 
   public node: BasicTreeNode;
-
   public cloneNode?: BasicTreeNode; // for animation
-  private _viewObjectMap?: Map<number, BasicNodeViewobject>;
 
   public lineMesh?: THREE.Line;
   public nodeMesh: THREE.Mesh = new THREE.Mesh();
@@ -24,16 +27,66 @@ export default class BasicNodeViewobject extends THREE.Object3D {
   public static horizontalOffset = 80;
   public static originPosition = new THREE.Vector3(0, 400, 0);
 
-  constructor(node: BasicTreeNode, font: THREE.Font, map?: Map<number, BasicNodeViewobject>) {
+  private _left: NBasicNodeViewobject;
+  private _right: NBasicNodeViewobject;
+  private _parent: NBasicNodeViewobject;
+  public lastParent?: NBasicNodeViewobject;
+
+  constructor(node: BasicTreeNode, font: THREE.Font) {
     super();
     this.node = node;
-    this._viewObjectMap = map;
     this.getSphereNode();
     node.key && this.getTextMesh(node.key, font);
     this.add(this.nodeMesh);
     this.add(this.textMesh);
     this.refresh();
     this._oldNodeColor = (this.nodeMesh.material as THREE.MeshPhongMaterial).color.clone();
+  }
+
+  public withDirtyWork (node: NBasicNodeViewobject, func: Function) {
+    if (!node) {}
+    func();
+    if(node) {
+      // 如果赋值节点是当前的父节点，解除父子关系
+      if (this.vparent === node) {
+        if (this.vparent.left === node) {
+          this.vparent.left = undefined;
+        }
+        if (this.vparent.right === node) {
+          this.vparent.right = undefined;
+        }
+        this._parent = undefined;
+      }
+      node._parent = this;
+    }
+  }
+
+  public get left(): NBasicNodeViewobject{
+    return this._left;
+  }
+
+  public set left(vo: NBasicNodeViewobject) {
+    this.withDirtyWork(vo, () => {
+      this._left = vo;
+    });
+  }
+
+  public get right(): NBasicNodeViewobject{
+    return this._right;
+  }
+
+  public set right(vo: NBasicNodeViewobject) {
+    this.withDirtyWork(vo, () => {
+      this._right = vo;
+    });
+  }
+
+  public get vparent(): NBasicNodeViewobject{
+    return this._parent;
+  }
+
+  public set vparent(vo: NBasicNodeViewobject){
+    this._parent = vo;
   }
 
   public changeColor(color: number) {
@@ -44,23 +97,9 @@ export default class BasicNodeViewobject extends THREE.Object3D {
     (this.nodeMesh.material as THREE.MeshPhongMaterial).color = this._oldNodeColor;
   }
 
-  public getParentPosition() {
-    const gp = (node?: BasicTreeNode) => {
-      if (node && node.parent && this._viewObjectMap) {
-        const parentVo = this._viewObjectMap.get(node.parent.key);
-        if (parentVo) {
-          return parentVo.position;
-        }
-      }
-      return node && node.parent && node.parent.userData.position;
-    }
-    return gp(this.cloneNode) || gp(this.node);
-  }
-
-  public getNodePosition(): THREE.Vector3 {
-    const node = this.node;
-    const position = BasicNodeViewobject.getChildPosition(this.cloneNode || node, this.getParentPosition());
-    return position;
+  public getParentPosition(parent?: NBasicNodeViewobject) {
+    const vparent = parent || this.vparent;
+    return vparent && vparent.position;
   }
 
   public getSphereNode() {
@@ -91,15 +130,14 @@ export default class BasicNodeViewobject extends THREE.Object3D {
 
   public getConnectLineToParent(connectToPoition?: THREE.Vector3) {
     if (!connectToPoition) {
-      const vparentPosition = this.getParentPosition();
-      if (!vparentPosition) {
-        if (this.lineMesh) {
-          this.remove(this.lineMesh)
-          this.lineMesh = undefined;
-        }
-        return
+      connectToPoition = this.getParentPosition();
+    }
+    if (!connectToPoition) {
+      if (this.lineMesh) {
+        this.remove(this.lineMesh)
+        this.lineMesh = undefined;
       }
-      connectToPoition = vparentPosition;
+      return;
     }
     connectToPoition = new THREE.Vector3().subVectors(connectToPoition!, this.position);
     const geometry = new THREE.Geometry();
@@ -122,7 +160,12 @@ export default class BasicNodeViewobject extends THREE.Object3D {
 
   public refresh() {
     // console.log(`refresh${this.node.key}`);
-    this.updatePosition(this.getNodePosition());
+    this.updatePosition(this.getPositionFromParent());
+  }
+
+  public connectToOther(parent: BasicNodeViewobject) {
+    const parentPosition = this.getParentPosition(parent);
+    this.refreshLineMesh(parentPosition)
   }
 
   public refreshLineMesh(connectToPoition?: THREE.Vector3) {
@@ -135,24 +178,25 @@ export default class BasicNodeViewobject extends THREE.Object3D {
     }
   }
 
-  public static getChildPosition(rbNode: BasicTreeNode, parentPosition?: THREE.Vector3) {
+  public getPositionFromParent(parent?: NBasicNodeViewobject, isLeft?: boolean) {
+    const rbNode: BasicTreeNode = this.node;
+    const parentPosition = this.getParentPosition(parent);
     if (!parentPosition) {
       return BasicNodeViewobject.originPosition;
-    } else {
-      const position = parentPosition.clone();
-      position.y -= BasicNodeViewobject.verticalOffset;
-      if (rbNode.isOnLeft()) {
-        position.x -= BasicNodeViewobject.horizontalOffset;
-        if (rbNode.sibling && rbNode.hasChild()) {
-          position.x -= BasicNodeViewobject.horizontalOffset;
-        }
-      } else {
-        position.x += BasicNodeViewobject.horizontalOffset;
-        if (rbNode.sibling && rbNode.hasChild()) {
-          position.x += BasicNodeViewobject.horizontalOffset;
-        }
-      }
-      return position;
     }
+    const position = parentPosition.clone();
+    position.y -= BasicNodeViewobject.verticalOffset;
+    if (isLeft || rbNode.isOnLeft()) {
+      position.x -= BasicNodeViewobject.horizontalOffset;
+      if (rbNode.sibling && rbNode.hasChild()) {
+        position.x -= BasicNodeViewobject.horizontalOffset;
+      }
+    } else {
+      position.x += BasicNodeViewobject.horizontalOffset;
+      if (rbNode.sibling && rbNode.hasChild()) {
+        position.x += BasicNodeViewobject.horizontalOffset;
+      }
+    }
+    return position;
   }
 }
