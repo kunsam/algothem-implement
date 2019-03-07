@@ -93,6 +93,16 @@ export default class AppLayout extends React.Component<{ onSceneLoaded: (a: App)
         );
         break;
       }
+      case 81: { // q
+        camera.position.add(
+          new THREE.Vector3(0, OFFSET, 0)
+        );
+        break;
+      }
+      case 69: { // e
+        camera.position.add(new THREE.Vector3(0, -1 * OFFSET, 0));
+        break;
+      }
     }
   }
 

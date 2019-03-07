@@ -50,12 +50,12 @@ export default class AppScene extends Component<{ onDidMount: (a: AppCanvas) => 
     camera.rotation.copy(new THREE.Euler())
     scene.add( camera );
 
-    const geometry = new THREE.SphereGeometry( 20, 10, 10 );
-    const mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial({
-      color: 0xff00ff,
-    }));
-    mesh.position.copy(new THREE.Vector3(0, 400, 0))
-    scene.add(mesh)
+    // const geometry = new THREE.SphereGeometry( 20, 10, 10 );
+    // const mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial({
+    //   color: 0xff00ff,
+    // }));
+    // mesh.position.copy(new THREE.Vector3(0, 400, 0))
+    // scene.add(mesh)
 
     const renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
