@@ -137,6 +137,7 @@ export default class RotatedAnimator extends AnimatorBase {
     this._viewObject.changeColor(0x00ff00);
     this._rotateNode(this._parentViewObject, this._dirtyType);
     this._viewObject.refreshLineMesh(this._parentViewObject.position);
+  
     this._keepChildTrack(this._node.left);
     this._keepChildTrack(this._node.right);
 

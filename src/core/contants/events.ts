@@ -19,6 +19,7 @@ export enum AppCommandEventType {
   sceneLoaded = 'sceneLoaded',
   operationDone = 'operationDone',
   onSelectTree = 'onSelectTree',
+  toggleAnimate = 'toggleAnimate',
 }
 
 export enum KeyBoardEventTypes {

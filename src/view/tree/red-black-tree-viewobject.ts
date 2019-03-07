@@ -62,6 +62,10 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
     this.saveViewObjects();
     this.updateViewObjectsRelation();
     this._dityFlowsAnimationFlow();
+    if (this._disableAnimate) {
+      this.reloadTreeViewObject(this.tree);
+      this._app.eventManager.commandEvents().emitOperationDone();
+    }
     this.__maxDepthViewObject = undefined;
   }
 
@@ -81,6 +85,10 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
     this.saveViewObjects();
     this.updateViewObjectsRelation();
     this._dityFlowsAnimationFlow();
+    if (this._disableAnimate) {
+      this.reloadTreeViewObject(this.tree);
+      this._app.eventManager.commandEvents().emitOperationDone();
+    }
     this.__maxDepthViewObject = undefined;
   }
 
@@ -100,6 +108,12 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
       this.saveViewObjects();
       this.updateViewObjectsRelation();
       this._dityFlowsAnimationFlow();
+      if (this._disableAnimate) {
+        if (findNode) {
+          message.info('存在!', 0.8);
+          this._app.eventManager.commandEvents().emitOperationDone();
+        }
+      }
     }
   }
 

@@ -9,12 +9,13 @@ import { KeyboardEventContext } from '../../src/core/event/context/keyboard-even
 
 export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) {
 
-  return class extends React.Component<{ app: AppBase }, { operating: boolean }> {
+  return class extends React.Component<{ app: AppBase }, { operating: boolean, toggleAnimate: boolean }> {
     private _operationDone: boolean;
     constructor(props: any) {
       super(props);
       this.state = {
         operating: false,
+        toggleAnimate: true,
       };
       this._operationDone = false;
     }
@@ -50,8 +51,17 @@ export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) 
         );
       }
     }
+    public onHandleOpenAnimate() {
+      if (this.props.app) {
+        this.props.app.eventManager.commandEvents().emitEvent(
+          AppCommandEventType.toggleAnimate,
+        );
+      }
+      this.setState({ toggleAnimate: !this.state.toggleAnimate })
+    }
 
     render() {
+      const { toggleAnimate } = this.state;
       return (
         <div className="ControlPanel">
           <WrappedComponent
@@ -61,8 +71,13 @@ export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) 
           />
           <div className="right-global-panel">
             <Button type="primary" icon="play-circle" onClick={this.onReplay.bind(this)}>
-              回放[shortcut: P]
+              回放[P]
             </Button>
+            <Button
+              style={{ marginLeft: 5 }}
+              type="primary" icon={ toggleAnimate ? 'close' : 'check'}
+              onClick={this.onHandleOpenAnimate.bind(this)}
+            >{toggleAnimate ? '关闭动画' : '打开动画'}</Button>
           </div>
           <div style={{ clear: 'both' }}/>
         </div>

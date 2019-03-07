@@ -1,3 +1,4 @@
+import { BinarySearchTreeTransformUtil } from './../../tree/binary-search-tree-util';
 import { message } from 'antd';
 import * as THREE from 'three';
 import FontManager from '../font/font-manager';
@@ -5,7 +6,7 @@ import AnimatorBase from './animator/animator-base';
 import { AppBase } from './../../../layouts/app/app';
 import AnimatorManager from './animator/animator-manager';
 import { BasicTreeNode } from './../../tree/node/basic-node';
-import BasicNodeViewobject from './node/basic-node-viewobject';
+import BasicNodeViewobject, { NBasicNodeViewobject } from './node/basic-node-viewobject';
 import { BasicBinaryTree } from './../../tree/basic-binary-tree';
 import { GlobalNodeDirtyFlows } from './global-node-dirty-flows';
 import { AppCommandEventType } from './../../core/contants/events';
@@ -23,6 +24,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
   public tree: BasicBinaryTree;
 
   protected _app: AppBase;
+  protected _disableAnimate: boolean = false;
   protected _animatorManager: AnimatorManager;
 
   protected _nodeViewObjectMap: Map<number, BasicNodeViewobject>;
@@ -42,6 +44,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       this.addNode(node);
       return undefined;
     });
+    this.reshapeTree();
     this.updateViewObjectsRelation(true);
     this._animatorManager = new AnimatorManager(
       this._nodeViewObjectMap,
@@ -50,6 +53,43 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     this._initEvent();
     this._lastNodeViewObjectMap = new Map();
     this.saveViewObjects();
+  }
+
+  public reshapeTree() {
+    const rootKey = this.tree.root && this.tree.root.key;
+    if (!rootKey) return;
+    const rootVo = this._nodeViewObjectMap.get(rootKey);
+    if (!rootVo) return;
+    this.updateViewObjectsRelation();
+    const inorder = BinarySearchTreeTransformUtil.toInorderArray(this.tree.root, []);
+    const rootIndex = inorder.findIndex(key => key === rootKey);
+    if (rootIndex === undefined) return;
+    // console.log(inorder, rootVo, rootIndex, 'reshapeTreereshapeTree inorder')
+    inorder.forEach((key, index) => {
+      const vo = this._nodeViewObjectMap.get(key);
+      if (vo) {
+        const delta = index - rootIndex;
+        const vopos = vo.position.clone();
+        vopos.x = delta * BasicNodeViewobject.horizontalOffset;
+        vo.updatePosition(vopos);
+      }
+    });
+    this._nodeViewObjectMap.forEach(vo => {
+      if (vo.node.parent) {
+        const pvo = this._nodeViewObjectMap.get(vo.node.parent.key);
+        if (pvo) {
+          vo.refreshLineMesh(pvo.position);
+        }
+      }
+    });
+  }
+
+  public toInorderArrayUtil(root: NBasicNodeViewobject, inorder: BasicNodeViewobject[] = []) {
+    if (root === undefined) return inorder;
+    inorder = this.toInorderArrayUtil(root.left, inorder);
+    inorder.push(root);
+    inorder = this.toInorderArrayUtil(root.right, inorder);
+    return inorder;
   }
 
   public reloadTreeViewObject(tree: BasicBinaryTree) {
@@ -117,6 +157,8 @@ export class BinaryTreeViewObject extends THREE.Object3D {
           const pvo = this._nodeViewObjectMap.get(node.parent.key);
           if (pvo) {
             vo.connectToOther(pvo);
+            // this.reshapeTree();
+            // 性能
           }
         }
       }
@@ -137,6 +179,11 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       AppCommandEventType.rePlay, () => {
       this.onRelayAnimate();
     });
+    this._app.eventManager.commandEvents().listen(
+      AppCommandEventType.toggleAnimate, () => {
+        this._disableAnimate = !this._disableAnimate;
+      }
+    );
     this._app.eventManager.commandEvents().listen(
       AppCommandEventType.onSelectTree,
       (context: EventContext) => {
@@ -166,6 +213,10 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       this._nodeViewObjectMap.set(node.key, viewObject);
       this.add(viewObject);
     }
+    if (!this._enterAnimating) {
+      this.reshapeTree();
+    }
+
   }
 
   protected deleteNode(key: number) {
@@ -184,9 +235,15 @@ export class BinaryTreeViewObject extends THREE.Object3D {
         this._nodeViewObjectMap.delete(key);
       }
     }
+    if (!this._enterAnimating) {
+      this.reshapeTree();
+    }
   }
   
   private _resetAnimatorQueue() {
+    if (this._disableAnimate) {
+      this._nodeViewObjectMap.forEach(vo => vo.refresh);
+    }
     if (this._animatorFlows.length) {
       this._animatorFlows.shift();
     }
@@ -249,14 +306,21 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     } else {
       if (this._enterAnimating) {
         this._enterAnimating = false;
+        // trueend
+        this.reshapeTree();
         this._app.eventManager.commandEvents().emitOperationDone();
       }
     }
   }
 
   protected _dityFlowsAnimationFlow() {
+
+    if (this._disableAnimate) {
+      return;
+    }
+    
     const logs: any[] = [];
-    this._animatorFlows = [];
+    // this._animatorFlows = [];
     const dirtyNodesFlows = GlobalNodeDirtyFlows.dirtyFlows;
     dirtyNodesFlows.forEach(flowData => {
       logs.push(flowData.flow.map(n => ({ dt: n.data.type, node: n.node, data: n.data })));
@@ -277,7 +341,6 @@ export class BinaryTreeViewObject extends THREE.Object3D {
   }
 
   public leftRotate(key: number) {
-
     GlobalNodeDirtyFlows.reset();
     const node = this.tree.search(key);
     if (!node) {
@@ -288,6 +351,10 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       this.updateViewObjectsRelation();
     }
     this._dityFlowsAnimationFlow();
+    if (this._disableAnimate) {
+      this.reloadTreeViewObject(this.tree);
+      this._app.eventManager.commandEvents().emitOperationDone();
+    }
   }
 
   public rightRotate(key: number) {
@@ -301,6 +368,10 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       this.updateViewObjectsRelation();
     }
     this._dityFlowsAnimationFlow();
+    if (this._disableAnimate) {
+      this.reloadTreeViewObject(this.tree);
+      this._app.eventManager.commandEvents().emitOperationDone();
+    }
   }
 
 }
