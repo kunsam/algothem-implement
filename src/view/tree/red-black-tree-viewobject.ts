@@ -1,6 +1,5 @@
 import { message } from 'antd';
 import 'antd/lib/message/style/index.css';
-
 import FontManager from '../font/font-manager';
 import { AppBase } from './../../../layouts/app/app';
 import { RBNode } from '../../tree/node/red-black-node';
@@ -48,62 +47,6 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
     );
   }
 
-
-  // protected _dityFlowsAnimationFlow() {
-  //   const logs: any[] = [];
-  //   this._animatorFlows = [];
-  //   const dirtyNodesFlows = GlobalNodeDirtyFlows.dirtyFlows;
-  //   dirtyNodesFlows.forEach(flowData => {
-  //     logs.push(flowData.flow.map(n => ({ dt: n.data.type, node: n.node, data: n.data })));
-  //     const animators: AnimatorBase[] = [];
-  //     flowData.flow.forEach(info => {
-  //       switch (info.data.type) {
-  //         case NodeDirtyType.deleted: {
-  //           if (info.data.key !== undefined) {
-  //             const viewobject = this._nodeViewObjectMap.get(info.data.key);
-  //             if (viewobject) {
-  //               const self = this;
-  //               animators.push(new DeleteNodeAnimator(
-  //                 new RBNode(info.data.key),
-  //                 viewobject,
-  //                 () => {
-  //                   self.deleteNode(info.data.key);
-  //                 }
-  //               ));
-  //             }
-  //           }
-  //           break;
-  //         }
-  //         case NodeDirtyType.added: {
-  //           if (info.node) {
-  //             animators.push(new AddNodeAnimator(
-  //               info.node,
-  //               new BasicNodeViewobject(info.node, FontManager.getFont('helv')),
-  //               () => {
-  //                 const trueNode = (this.tree as RedBlackTree).search(info.node!.key);
-  //                 if (trueNode) {
-  //                   this.addNode(trueNode as RBNode);
-  //                   const vo =this._nodeViewObjectMap.get(trueNode.key);
-  //                   if (vo) {
-  //                     vo.cloneNode = info.node!;
-  //                     vo.refresh();
-  //                     vo.cloneNode = undefined;
-  //                   }
-  //                 }
-  //               }
-  //             ));
-  //           }
-  //           break;
-  //         }
-  //       }
-  //     });
-  //     if (animators.length) {
-  //       this._animatorFlows.push(animators);
-  //     }
-  //   });
-  //   console.log(logs, this._animatorFlows.map(c => c), 'log')
-  // }
-
   public get rtree() {
     return this.tree as RedBlackTree;
   }
@@ -116,6 +59,8 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
       return;
     }
     this.rtree.insert(key);
+    this.saveViewObjects();
+    this.updateViewObjectsRelation();
     this._dityFlowsAnimationFlow();
     this.__maxDepthViewObject = undefined;
   }
@@ -132,7 +77,9 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
       node: null,
       data: { key },
       dirtyType: NodeDirtyType.deleted,
-    }])
+    }]);
+    this.saveViewObjects();
+    this.updateViewObjectsRelation();
     this._dityFlowsAnimationFlow();
     this.__maxDepthViewObject = undefined;
   }
@@ -149,7 +96,9 @@ export class RedBlackTreeViewObject extends BinarySearchTreeViewObject {
         node: findNode,
         data: { text: 'target!' },
         dirtyType: NodeDirtyType.showText,
-      }])
+      }]);
+      this.saveViewObjects();
+      this.updateViewObjectsRelation();
       this._dityFlowsAnimationFlow();
     }
   }

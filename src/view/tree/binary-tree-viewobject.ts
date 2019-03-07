@@ -42,14 +42,14 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       this.addNode(node);
       return undefined;
     });
-    this._updateViewObjectsRelation(true);
+    this.updateViewObjectsRelation(true);
     this._animatorManager = new AnimatorManager(
       this._nodeViewObjectMap,
       this._app.eventManager,
     );
     this._initEvent();
     this._lastNodeViewObjectMap = new Map();
-    this._saveViewObjects();
+    this.saveViewObjects();
   }
 
   public reloadTreeViewObject(tree: BasicBinaryTree) {
@@ -60,9 +60,9 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       this.addNode(node);
       return undefined;
     });
-    this._updateViewObjectsRelation(true);
+    this.updateViewObjectsRelation(true);
     this._lastNodeViewObjectMap.clear();
-    this._saveViewObjects();
+    this.saveViewObjects();
     this._enterAnimating = false;
     this._animatorFlows = [];
     if (this._currentAcitiveAnimators) {
@@ -71,7 +71,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
   }
   
 
-  private _saveViewObjects() {
+  public saveViewObjects() {
     this._nodeViewObjectMap.forEach(vo => {
       this._lastNodeViewObjectMap.set(vo.node.key, {
         position: vo.position.clone(),
@@ -80,7 +80,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     });
   }
 
-  private _updateViewObjectsRelation(isRefresh?: boolean) {
+  public updateViewObjectsRelation(isRefresh?: boolean) {
     this._nodeViewObjectMap.forEach(vo => {
       const node = this.tree.search(vo.node.key);
       if (node) {
@@ -102,7 +102,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     });
   }
 
-  private _initEvent() {
+  protected _listenNodeAddedAndDeleted() {
     const onDeleteNode = (context: EventContext) => {
       const key = context.args.key;
       this.deleteNode(key);
@@ -110,13 +110,14 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     const onAddNode = (context: EventContext) => {
       const node = context.args.node;
       const trueNode = this.tree.search(node.key);
-      if (trueNode) {
+      if (node && trueNode) {
         this.addNode(trueNode);
-        const vo =this._nodeViewObjectMap.get(trueNode.key);
-        if (vo) {
-          vo.cloneNode = node;
-          vo.refresh();
-          vo.cloneNode = undefined;
+        const vo = this._nodeViewObjectMap.get(node.key);
+        if (vo && node.parent) {
+          const pvo = this._nodeViewObjectMap.get(node.parent.key);
+          if (pvo) {
+            vo.connectToOther(pvo);
+          }
         }
       }
     }
@@ -128,6 +129,10 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       IBinaryTreeViewObjectEvent.addNode,
       onAddNode.bind(this)
     );
+  }
+
+  private _initEvent() {
+    this._listenNodeAddedAndDeleted();
     this._app.eventManager.commandEvents().listen(
       AppCommandEventType.rePlay, () => {
       this.onRelayAnimate();
@@ -279,8 +284,8 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       message.error('Not Found node', 0.8);
     } else {
       this.tree.rotateLeft(node, true);
-      this._saveViewObjects();
-      this._updateViewObjectsRelation();
+      this.saveViewObjects();
+      this.updateViewObjectsRelation();
     }
     this._dityFlowsAnimationFlow();
   }
@@ -292,8 +297,8 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       message.error('Not Found node', 0.8);
     } else {
       this.tree.rotateRight(node, true);
-      this._saveViewObjects();
-      this._updateViewObjectsRelation();
+      this.saveViewObjects();
+      this.updateViewObjectsRelation();
     }
     this._dityFlowsAnimationFlow();
   }

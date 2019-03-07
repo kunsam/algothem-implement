@@ -15,8 +15,6 @@ export type NBasicNodeViewobject = BasicNodeViewobject | undefined;
 export default class BasicNodeViewobject extends THREE.Object3D {
 
   public node: BasicTreeNode;
-  public cloneNode?: BasicTreeNode; // for animation
-
   public lineMesh?: THREE.Line;
   public nodeMesh: THREE.Mesh = new THREE.Mesh();
   public textMesh: THREE.Mesh = new THREE.Mesh();
@@ -165,7 +163,10 @@ export default class BasicNodeViewobject extends THREE.Object3D {
 
   public connectToOther(parent: BasicNodeViewobject) {
     const parentPosition = this.getParentPosition(parent);
-    this.refreshLineMesh(parentPosition)
+    if (parentPosition) {
+      this.updatePosition(this.getPositionFromParent(parent));
+      this.refreshLineMesh(parentPosition);
+    }
   }
 
   public refreshLineMesh(connectToPoition?: THREE.Vector3) {

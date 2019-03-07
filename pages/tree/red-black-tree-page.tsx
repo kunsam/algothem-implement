@@ -52,14 +52,14 @@ export class PageComp extends WithTreePageBase() {
 
   protected getTree() {
     const redblacktree = new RedBlackTree();
-    redblacktree.insert(50);
-    redblacktree.insert(30);
-    redblacktree.insert(42);
-    redblacktree.insert(20);
-    redblacktree.insert(18);
-    redblacktree.insert(26);
-    redblacktree.insert(50);
-    redblacktree.insert(82);
+    // redblacktree.insert(50);
+    // redblacktree.insert(30);
+    // redblacktree.insert(42);
+    // redblacktree.insert(20);
+    // redblacktree.insert(18);
+    // redblacktree.insert(26);
+    // redblacktree.insert(50);
+    // redblacktree.insert(82);
     return redblacktree
   }
 
@@ -74,7 +74,7 @@ export class PageComp extends WithTreePageBase() {
   protected onRenderFrame = (treevo: BinaryTreeViewObject, canvas: AppCanvas) => {
     const rtreevo = treevo as RedBlackTreeViewObject;
     const maxDepthViewObject = rtreevo.getMaxDepthNodeViewObject();
-    if (maxDepthViewObject) {
+    if (maxDepthViewObject && maxDepthViewObject.position.y < 200) {
       canvas.grhelper.position.y = maxDepthViewObject.position.y - 200;
     }
   }

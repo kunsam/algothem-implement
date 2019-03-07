@@ -116,7 +116,7 @@ export default class RotatedAnimator extends AnimatorBase {
     if (!parentViewObject || !nodeViewObject) {
       return;
     }
-    nodeViewObject.refresh();
+    nodeViewObject.connectToOther(parentViewObject);
     if (node.left) {
       this._keepChildTrack(node.left);
     }
@@ -136,14 +136,22 @@ export default class RotatedAnimator extends AnimatorBase {
     this._rotateNode(this._viewObject, this._dirtyType);
     this._viewObject.changeColor(0x00ff00);
     this._rotateNode(this._parentViewObject, this._dirtyType);
+    this._viewObject.refreshLineMesh(this._parentViewObject.position);
     this._keepChildTrack(this._node.left);
     this._keepChildTrack(this._node.right);
+
     const parent = this._node.parent;
     if (parent) {
       if (this._node.isOnLeft()) {
         this._keepChildTrack(parent.right);
       } else {
         this._keepChildTrack(parent.left);
+      }
+      if (parent.parent) {
+        const gpo = this._viewObjectMap.get(parent.parent.key);
+        if (gpo) {
+          this._parentViewObject.refreshLineMesh(gpo.position);
+        }
       }
     }
   }
@@ -185,7 +193,6 @@ export default class RotatedAnimator extends AnimatorBase {
       return true;
     } else if (this.currentFrame >= this.duration) {
       this._initRotateInfoMap.clear();
-      // this._viewObject.cloneNode = undefined;
       this._viewObject.resetColor();
       this._resetText();
     }
