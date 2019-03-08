@@ -44,8 +44,8 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       this.addNode(node);
       return undefined;
     });
-    this.reshapeTree();
     this.updateViewObjectsRelation(true);
+    this.reshapeTree();
     this._animatorManager = new AnimatorManager(
       this._nodeViewObjectMap,
       this._app.eventManager,
@@ -60,7 +60,6 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     if (!rootKey) return;
     const rootVo = this._nodeViewObjectMap.get(rootKey);
     if (!rootVo) return;
-    this.updateViewObjectsRelation();
     const inorder = BinarySearchTreeTransformUtil.toInorderArray(this.tree.root, []);
     const rootIndex = inorder.findIndex(key => key === rootKey);
     if (rootIndex === undefined) return;
@@ -148,7 +147,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
       this.deleteNode(key);
     }
     const onAddNode = (context: EventContext) => {
-      const node = context.args.node;
+      const node = context.args.node as BasicTreeNode;
       const trueNode = this.tree.search(node.key);
       if (node && trueNode) {
         this.addNode(trueNode);
@@ -156,9 +155,12 @@ export class BinaryTreeViewObject extends THREE.Object3D {
         if (vo && node.parent) {
           const pvo = this._nodeViewObjectMap.get(node.parent.key);
           if (pvo) {
+            if (node.isOnLeft()) {
+              pvo.left = vo;
+            } else {
+              pvo.right = vo;
+            }
             vo.connectToOther(pvo);
-            // this.reshapeTree();
-            // 性能
           }
         }
       }
@@ -306,7 +308,7 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     } else {
       if (this._enterAnimating) {
         this._enterAnimating = false;
-        // trueend
+        // true end
         this.reshapeTree();
         this._app.eventManager.commandEvents().emitOperationDone();
       }
@@ -346,9 +348,8 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     if (!node) {
       message.error('Not Found node', 0.8);
     } else {
-      this.tree.rotateLeft(node, true);
+      this.tree.rotateLeft(node);
       this.saveViewObjects();
-      this.updateViewObjectsRelation();
     }
     this._dityFlowsAnimationFlow();
     if (this._disableAnimate) {
@@ -363,9 +364,8 @@ export class BinaryTreeViewObject extends THREE.Object3D {
     if (!node) {
       message.error('Not Found node', 0.8);
     } else {
-      this.tree.rotateRight(node, true);
+      this.tree.rotateRight(node);
       this.saveViewObjects();
-      this.updateViewObjectsRelation();
     }
     this._dityFlowsAnimationFlow();
     if (this._disableAnimate) {

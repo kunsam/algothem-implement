@@ -26,12 +26,14 @@ export class BasicTreeNode {
     if (GlobalNodeDirtyFlows.isStartSequence) {
       GlobalNodeDirtyFlows.sequenceFlow.push({
         ...data,
+        dirtyType: data.dirtyType,
         node: cloneDeep(data.node),
       });
     } else {
       if (this.dirty) {
         GlobalNodeDirtyFlows.addToDirtyFlows([ {
           ...data,
+          dirtyType: data.dirtyType,
           node: cloneDeep(data.node),
         }]);
         this.dirty = false;
@@ -103,7 +105,7 @@ export class BasicTreeNode {
 
   public isOnLeft(): boolean {
     if (this.parent === null) {
-      return false;
+      return true;
     }
     return this === this.parent.left;
   }

@@ -180,24 +180,34 @@ export default class BasicNodeViewobject extends THREE.Object3D {
   }
 
   public getPositionFromParent(parent?: NBasicNodeViewobject, isLeft?: boolean) {
-    const rbNode: BasicTreeNode = this.node;
     const parentPosition = this.getParentPosition(parent);
     if (!parentPosition) {
       return BasicNodeViewobject.originPosition;
     }
     const position = parentPosition.clone();
     position.y -= BasicNodeViewobject.verticalOffset;
-    if (isLeft || rbNode.isOnLeft()) {
-      position.x -= BasicNodeViewobject.horizontalOffset;
-      if (rbNode.sibling && rbNode.hasChild()) {
-        position.x -= BasicNodeViewobject.horizontalOffset;
-      }
+    let isOnLeft = true;
+    if (isLeft !== undefined) {
+      isOnLeft = isLeft;
     } else {
-      position.x += BasicNodeViewobject.horizontalOffset;
-      if (rbNode.sibling && rbNode.hasChild()) {
-        position.x += BasicNodeViewobject.horizontalOffset;
+      if (parent) {
+        isOnLeft = parent.left === this;
+      } else {
+        if (this._parent) {
+          isOnLeft = this.isOnLeft();
+        }
       }
     }
+    if (isOnLeft) {
+      position.x -= BasicNodeViewobject.horizontalOffset;
+    } else {
+      position.x += BasicNodeViewobject.horizontalOffset;
+    }
     return position;
+  }
+
+  public isOnLeft() {
+    if (!this._parent) return true;
+    return this._parent.left === this;
   }
 }

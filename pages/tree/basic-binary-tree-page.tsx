@@ -27,7 +27,7 @@ class BinaryTreePage extends WithTreePageBase() {
           treevo.rightRotate(key);
          },
        },
-     ]
+     ];
    }
 
    protected getTree() {

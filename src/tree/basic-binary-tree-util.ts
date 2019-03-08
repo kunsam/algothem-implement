@@ -113,14 +113,12 @@ export default class BasicBinaryTreeUtil {
     
     if (showDirty) {
       GlobalNodeDirtyFlows.endSequence('BasicBinaryTreeUtil.rotateLeft');
+      GlobalNodeDirtyFlows.addToDirtyFlows([{
+        node: cloneDeep(node),
+        data: { duration: 40 },
+        dirtyType: NodeDirtyType.leftRotated,
+      }]);
     }
-
-    GlobalNodeDirtyFlows.addToDirtyFlows([{
-      node: cloneDeep(node),
-      data: { duration: 40 },
-      dirtyType: NodeDirtyType.leftRotated,
-    }]);
-
   }
 
   public static rotateRight(props: { node: BasicTreeNode, root: NBasicTreeNode, showDirty?: boolean }) {
@@ -154,13 +152,14 @@ export default class BasicBinaryTreeUtil {
 
     if (showDirty) {
       GlobalNodeDirtyFlows.endSequence('BasicBinaryTreeUtil.rotateRight');
+      // 放在后面因为旋转动画会刷新位置
+      GlobalNodeDirtyFlows.addToDirtyFlows([{
+        node: cloneDeep(node),
+        dirtyType: NodeDirtyType.rightRotated,
+      }]);
     }
 
-    // 放在后面因为旋转动画会刷新位置
-    GlobalNodeDirtyFlows.addToDirtyFlows([{
-      node: cloneDeep(node),
-      dirtyType: NodeDirtyType.rightRotated,
-    }]);
+
   }
 
   // https://en.wikipedia.org/wiki/Threaded_binary_tree

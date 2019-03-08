@@ -116,6 +116,11 @@ export default class RotatedAnimator extends AnimatorBase {
     if (!parentViewObject || !nodeViewObject) {
       return;
     }
+    if (node.isOnLeft()) {
+      parentViewObject.left = nodeViewObject;
+    } else {
+      parentViewObject.right = nodeViewObject;
+    }
     nodeViewObject.connectToOther(parentViewObject);
     if (node.left) {
       this._keepChildTrack(node.left);
