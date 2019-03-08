@@ -79,6 +79,9 @@ export class BinaryTreeViewObject extends THREE.Object3D {
         if (pvo) {
           vo.refreshLineMesh(pvo.position);
         }
+      } else {
+        vo.lineMesh && vo.remove(vo.lineMesh);
+        vo.lineMesh = undefined;
       }
     });
   }

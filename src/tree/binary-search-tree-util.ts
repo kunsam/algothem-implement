@@ -207,9 +207,9 @@ export class BinarySearchTreeUtil{
       ], 'BinarySearchTreeUtil.search');
     }
     if (key > root.key) {
-      return this.search({ key, root: root.right });
+      return this.search({ key, root: root.right, addToFlow });
     }
-    return this.search({ key, root: root.left });
+    return this.search({ key, root: root.left, addToFlow });
   }
 
   public static searchIteratively(key: number, root: NBasicTreeNode, addToFlow?: boolean): NBasicTreeNode {
