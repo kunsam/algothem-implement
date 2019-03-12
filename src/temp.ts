@@ -39,6 +39,7 @@ export default class KnightTour {
     for (let i = 0; i < 8; i++) {
       const nextX = x + X[i];
       const nextY = y + Y[i];
+      
       /*
       Check if knight is still in the board
       Check that knight does not visit an already visited square
