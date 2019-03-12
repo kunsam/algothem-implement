@@ -38,6 +38,7 @@ class BinarySeachTreePage extends WithTreePageBase() {
         eventType: IBinarySearchTreeEventType.onFind,
         listener: (tree: BinaryTreeViewObject) => {
           // tree
+          console.log(tree, 'tree')
         },
       },
       {

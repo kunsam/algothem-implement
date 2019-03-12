@@ -20,9 +20,9 @@ export default class AppScene extends Component<{ onDidMount: (a: AppCanvas) => 
     const light = new THREE.SpotLight( 0xffffff, 1.5 );
     light.position.set( 0, 1500, 200 );
     light.castShadow = true;
-    const lshadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 70, 1, 200, 2000 ) );
+    const lshadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 70, 1, 200, 2000 ) ) as THREE.SpotLightShadow;
     light.shadow = lshadow;
-  
+ 
     light.shadow.bias = - 0.000222;
     light.shadow.mapSize.width = 1024;
     light.shadow.mapSize.height = 1024;

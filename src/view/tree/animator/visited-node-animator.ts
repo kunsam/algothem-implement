@@ -24,7 +24,9 @@ export default class VisitedNodeAnimator extends AnimatorBase {
   private _resetColor() {
     if (this._oldColor) {
       const material = this._viewObject.nodeMesh.material;
-      material.color = this._oldColor;
+      if (material instanceof THREE.MeshPhongMaterial) {
+        material.color = this._oldColor;
+      }
     }
   }
   

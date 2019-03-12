@@ -25,7 +25,7 @@ export interface ITreeEvent {
 
 
 export function WithTreePageBase() {
-  return class extends React.Component<{app: App}> {
+  return class extends React.Component<{app: AppBase}> {
     // public treeViewObject: BinaryTreeViewObject | undefined;
     protected getEvent(): ITreeEvent[] {
       return []
@@ -79,7 +79,7 @@ export function WithTreePageBase() {
         }
       }
     }
-    private _initTree(app: App, canvas: AppCanvas) {
+    private _initTree(app: AppBase, canvas: AppCanvas) {
       FontManager.getFontAsync('helv').then(() => {
         const treeViewObject = this.createTreeViewObject(app);
         canvas.scene.add(treeViewObject);

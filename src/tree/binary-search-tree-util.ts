@@ -338,7 +338,7 @@ export class BinarySearchTreeUtil{
    * @returns {NBasicTreeNode}
    * @memberof BinarySearchTreeUtil
    */
-  public static getLowesetCommonAncestor(root: NBasicTreeNode, node1: BasicTreeNode, node2: BasicTreeNode): NNode {
+  public static getLowesetCommonAncestor(root: NBasicTreeNode, node1: BasicTreeNode, node2: BasicTreeNode): NBasicTreeNode {
     if (root === null) {
       return null;
     }
@@ -473,6 +473,7 @@ export class BinarySearchTreeUtil{
       return BinarySearchTreeUtil.distanceFromRoot(root, node1) +
         BinarySearchTreeUtil.distanceFromRoot(root, node2);
     }
+    return 0;
   }
   /**
    * 获得两个节点的距离

@@ -24,7 +24,7 @@ export class AppBase {
 }
 
 
-export default class AppLayout extends React.Component<{ onSceneLoaded: (a: App) => void }, any> {
+export default class AppLayout extends React.Component<{ onSceneLoaded: (a: AppBase) => void }, any> {
 
   public app: AppBase;
 

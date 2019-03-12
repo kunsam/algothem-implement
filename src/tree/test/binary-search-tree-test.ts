@@ -84,6 +84,7 @@ export function checkgetKthSmallestElementWithMorrisTraversal() {
   const bst = new BinarySearchTree().setFromLevelOrderArray([
     50, 30 , 70, 20, 40, 60 ,80
   ]);
+  console.log(bst, 'bst')
   // console.log(bst.getKthSmallestElementWithMorrisTraversal(4), 'nnn')
   for (let k=1; k<=7; k++) {
     // console.log(bst.getKthSmallestElementWithMorrisTraversal(k), k, 'nnn')

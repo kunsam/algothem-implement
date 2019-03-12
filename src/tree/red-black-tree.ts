@@ -233,44 +233,45 @@ export class RedBlackTree extends BinarySearchTree {
     if (!parent) {
       return;
     }
-    if (!node.sibling) {
+    const sibling = node.sibling as NRBNode;
+    if (!sibling) {
       this._fixDoubleBlack(parent);
     } else {
-      if (node.sibling.color === RBColor.red) {
+      if (sibling.color === RBColor.red) {
         GlobalNodeDirtyFlows.startSequence();
         parent.color = RBColor.red;
-        node.sibling.color = RBColor.black;
+        sibling.color = RBColor.black;
         GlobalNodeDirtyFlows.endSequence();
-        if (node.sibling.isOnLeft()) {
+        if (sibling.isOnLeft()) {
           this.rotateRight(parent);
         } else {
           this.rotateLeft(parent);
         }
         this._fixDoubleBlack(node);
       } else {
-        if (node.sibling.hasRedChild()) {
-          if (node.sibling.left && node.sibling.left.color === RBColor.red) {
-            if (node.sibling.isOnLeft()) {
+        if (sibling.hasRedChild()) {
+          if (sibling.left && sibling.left.color === RBColor.red) {
+            if (sibling.isOnLeft()) {
               GlobalNodeDirtyFlows.startSequence();
-              node.sibling.left.color = node.sibling.color;
-              node.sibling.color = parent.color;
+              sibling.left.color = sibling.color;
+              sibling.color = parent.color;
               GlobalNodeDirtyFlows.endSequence();
               this.rotateRight(parent);
             } else {
-              node.sibling.left.color = parent.color;
-              this.rotateRight(node.sibling);
+              sibling.left.color = parent.color;
+              this.rotateRight(sibling);
               this.rotateLeft(parent);
             }
           } else {
-            if (node.sibling.isOnLeft()) {
-              node.sibling.right!.dirty = true;
-              node.sibling.right!.color = parent.color;
-              this.rotateLeft(node.sibling);
+            if (sibling.isOnLeft()) {
+              sibling.right!.dirty = true;
+              sibling.right!.color = parent.color;
+              this.rotateLeft(sibling);
               this.rotateRight(parent);
             } else {
               GlobalNodeDirtyFlows.startSequence();
-              node.sibling.right!.color = node.sibling.color;
-              node.sibling.color = parent.color;
+              sibling.right!.color = sibling.color;
+              sibling.color = parent.color;
               GlobalNodeDirtyFlows.endSequence();
               this.rotateLeft(parent);
             }
@@ -278,8 +279,8 @@ export class RedBlackTree extends BinarySearchTree {
           parent!.dirty = true;
           parent!.color = RBColor.black;
         } else {
-          node.sibling.dirty = true;
-          node.sibling.color = RBColor.red;
+          sibling.dirty = true;
+          sibling.color = RBColor.red;
           if (parent.color === RBColor.black) {
             this._fixDoubleBlack(parent);
           } else {
