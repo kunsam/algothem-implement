@@ -9,12 +9,7 @@ export const testArray2 = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 ];
 
-export function SwapArrayElement(i: number, j: number, arr: any[]) {
-  if (i === j) return;
-  const temp = arr[i];
-  arr[i] = arr[j];
-  arr[j] = temp;
-}
+
 
 export function SelectionSort(arr: any[], needStatble?: boolean) {
   let minIndex: number;
@@ -44,54 +39,6 @@ export function SelectionSort(arr: any[], needStatble?: boolean) {
 
 
 
-export function InsertionSort(arr: any[]) {
-  for (let i = 0; i < arr.length; i++) {
-    const key = arr[i]; 
-    let j = i-1;
-    // 我怎么老是构思不出这种运算呢!
-    while (j >= 0 && arr[j] > key) { 
-        arr[j+1] = arr[j]; 
-        j = j-1; 
-    } 
-    arr[j+1] = key; 
-  }
-}
-
-export class HeapSort{
-  public static sort(arr: any[]) {
-    // ## 这里我当时很不太理解
-    for (let i = arr.length / 2 - 1; i >= 0; i--) { 
-      this.heapify(arr, arr.length, i);
-    }
-    for (let i= arr.length - 1; i >= 0; i--) { 
-      // Move current root to end 
-      SwapArrayElement(0, i, arr); 
-      // call max heapify on the reduced heap 
-      this.heapify(arr, i, 0); 
-    }
-  }
-
-  public static heapify(arr: any[], size: number, i: number) {
-      let largest = i; // Initialize largest as root 
-      let l = 2*i + 1; // left = 2*i + 1 
-      let r = 2*i + 2; // right = 2*i + 2 
-      // If left child is larger than root 
-      if (l < size && arr[l] > arr[largest]) 
-          largest = l; 
-    
-      // If right child is larger than largest so far 
-      if (r < size && arr[r] > arr[largest]) 
-          largest = r; 
-    
-      // If largest is not root 
-      if (largest != i) { 
-        SwapArrayElement(i, largest, arr); 
-          // Recursively heapify the affected sub-tree 
-        this.heapify(arr, size, largest); 
-      }
-  }
-
-}
 
 
 export class QuickSort {

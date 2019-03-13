@@ -9,7 +9,7 @@ import { swapArrayElement } from "../array-util";
 
 /**
  * This sorting algorithm is best suited for situations where memory write or swap operations are costly
- * @paradigm: Brute Force
+ * @paradigm: [BruteForce]
  * @Stable: No [ArraySortStability]
  */
 export default class CycleSort{ 

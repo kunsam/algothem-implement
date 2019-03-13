@@ -3,7 +3,7 @@ import { swapArrayElement } from "../array-util";
 
 /**
  * 冒泡排序
- * @paradigm: Brute Force
+ * @paradigm: [BruteForce]
  * @Stable: Yes [ArraySortStability]
  * @SortingInPlace: Yes
  */

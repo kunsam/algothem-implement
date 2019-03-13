@@ -10,7 +10,7 @@ const SHRINK_RATE = 1.3; // shrink factor
 
 /**
  * 梳排序:
- * @paradigm: Brute Force
+ * @paradigm: [BruteForce]
  * @Stable: No [ArraySortStability]
  * @SortingInPlace: Yes
  */
