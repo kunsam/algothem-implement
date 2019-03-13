@@ -42,30 +42,7 @@ export function SelectionSort(arr: any[], needStatble?: boolean) {
 }
 
 
-export function BubbleSort(arr: any[]) {
-  for (let i: number = 0; i < arr.length - 1; i++) {
-    for(let j = 0; j < arr.length - i - 1; j++) {
-      if (arr[j + 1] < arr[j]) {
-        SwapArrayElement(j+1, j, arr);
-      }
-    }
-  }
-}
 
-export function BubbleSortOptimaze1(arr: any[]) {
-  let swapped: boolean;
-  for (let i: number = 0; i < arr.length - 1; i++) {
-    swapped = false; 
-    for(let j = 0; j < arr.length - i - 1; j++) {
-      if (arr[j + 1] < arr[j]) {
-        SwapArrayElement(j+1, j, arr);
-        swapped = true;
-      }
-    }
-    // ## IF no two elements were swapped by inner loop, then break
-    if (swapped == false) break;
-  }
-}
 
 export function InsertionSort(arr: any[]) {
   for (let i = 0; i < arr.length; i++) {
@@ -81,11 +58,23 @@ export function InsertionSort(arr: any[]) {
 }
 
 export class HeapSort{
-  public heapify(arr: any[], size: number, i: number) {
+  public static sort(arr: any[]) {
+    // ## 这里我当时很不太理解
+    for (let i = arr.length / 2 - 1; i >= 0; i--) { 
+      this.heapify(arr, arr.length, i);
+    }
+    for (let i= arr.length - 1; i >= 0; i--) { 
+      // Move current root to end 
+      SwapArrayElement(0, i, arr); 
+      // call max heapify on the reduced heap 
+      this.heapify(arr, i, 0); 
+    }
+  }
+
+  public static heapify(arr: any[], size: number, i: number) {
       let largest = i; // Initialize largest as root 
       let l = 2*i + 1; // left = 2*i + 1 
       let r = 2*i + 2; // right = 2*i + 2 
-    
       // If left child is larger than root 
       if (l < size && arr[l] > arr[largest]) 
           largest = l; 
@@ -101,18 +90,7 @@ export class HeapSort{
         this.heapify(arr, size, largest); 
       }
   }
-  public sort(arr: any[]) {
-    // ## 这里我当时很不太理解
-    for (let i = arr.length / 2 - 1; i >= 0; i--) { 
-      this.heapify(arr, arr.length, i);
-    }
-    for (let i= arr.length - 1; i >= 0; i--) { 
-      // Move current root to end 
-      SwapArrayElement(0, i, arr); 
-      // call max heapify on the reduced heap 
-      this.heapify(arr, i, 0); 
-    }
-  }
+
 }
 
 
