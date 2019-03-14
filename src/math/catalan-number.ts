@@ -2,7 +2,7 @@ import { binomialCoefficient } from "./binomial-coefficient";
 
 
 
-export class CatalanNumber{
+export class CatalanNumber {
 
 
   // 多项式时间复杂度
