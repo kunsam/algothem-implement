@@ -8,6 +8,13 @@ import RadixSort from "./array/sort/radix-sort";
 import { getIntegerPartitions } from "./math/integer-partition";
 import { testKMP } from "./algorithm/Knuth–Morris–Pratt";
 import Levenshteins from "./algorithm/levenshteins-edit-distance";
+import LongestCommonSequence from "./algorithm/longest-common-sequence";
+import LongestIncreasingSequence from "./algorithm/longest-increasing-sequence";
+import LongestPalindromicSequence from "./algorithm/longest-palindromic-sequence";
+import MaxMiumSubarray from "./algorithm/maxmium-subarray";
+import PascalTriangle from "./math/pascal-triangle";
+import ShortestCommonSequence from "./algorithm/shortest-common-sequence";
+import ZSearch from "./algorithm/z-search";
 // import ShellSort from "./array/sort/shell-sort";
 
 
@@ -22,7 +29,7 @@ const array3 = [ 2, 3, 4, 5, 6];
 // BucketSort.sort(array1);
 // ShellSort
 
-Levenshteins.test();
+ZSearch.test();
 
 // console.log(array1, array3, 'RadixSort')
 
