@@ -11,6 +11,8 @@ export interface SackItem{
 
 // 转换为 sack * weight 
 
+// 也可以使用贪心算法
+
 // Knapsack problem
 // https://en.wikipedia.org/wiki/Knapsack_problem
 export function knapsackMaxValue(items: SackItem[], maxWeight: number) {

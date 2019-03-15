@@ -15,6 +15,9 @@ import MaxMiumSubarray from "./algorithm/maxmium-subarray";
 import PascalTriangle from "./math/pascal-triangle";
 import ShortestCommonSequence from "./algorithm/shortest-common-sequence";
 import ZSearch from "./algorithm/z-search";
+import BoyerMooreMajority from "./algorithm/Boyer–Moore-Majority";
+import JobScheduling from "./algorithm/greedy-job-scheduling";
+import StableMatching from "./algorithm/stable-matching";
 // import ShellSort from "./array/sort/shell-sort";
 
 
@@ -29,7 +32,7 @@ const array3 = [ 2, 3, 4, 5, 6];
 // BucketSort.sort(array1);
 // ShellSort
 
-ZSearch.test();
+StableMatching.test();
 
 // console.log(array1, array3, 'RadixSort')
 
