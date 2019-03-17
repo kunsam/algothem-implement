@@ -46,6 +46,12 @@ export default class BubbleSort {
     }
   }
 
+  public static test() {
+    const array = [ 2, 4, 2, 1, 5, 10, 8];
+    BubbleSort.sort(array);
+    console.log(array, 'arrayarray')
+  }
+
 
 }
 

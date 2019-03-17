@@ -12,7 +12,7 @@
 BubbleSort
 
 * UnStable
-CompSort
+CombSort
 
 ###Can we make any sorting algorithm stable?
 Any given sorting algo which is not stable can be modified to be stable. There can be sorting algo specific ways to make it stable, but in general, any comparison based sorting algorithm which is not stable by nature can be modified to be stable by changing the key comparison operation so that the comparison of two keys considers position as a factor for objects with equal keys
@@ -23,7 +23,7 @@ Any given sorting algo which is not stable can be modified to be stable. There c
 
 #BruteForce[https://en.wikipedia.org/wiki/Brute-force_search]
 * BubbleSort
-* CompSort
+* CombSort
 * CycleSort
 * HeapSort
 

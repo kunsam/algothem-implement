@@ -18,6 +18,7 @@ import ZSearch from "./algorithm/z-search";
 import BoyerMooreMajority from "./algorithm/Boyer–Moore-Majority";
 import JobScheduling from "./algorithm/greedy-job-scheduling";
 import StableMatching from "./algorithm/stable-matching";
+import BubbleSort from "./array/sort/bubble-sort";
 // import ShellSort from "./array/sort/shell-sort";
 
 
@@ -32,7 +33,7 @@ const array3 = [ 2, 3, 4, 5, 6];
 // BucketSort.sort(array1);
 // ShellSort
 
-StableMatching.test();
+BubbleSort.test();
 
 // console.log(array1, array3, 'RadixSort')
 
