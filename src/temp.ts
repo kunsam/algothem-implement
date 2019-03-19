@@ -1,3 +1,4 @@
+import { SegmentsTree } from './tree/segments-tree';
 
 import PancakeSort from "./array/sort/pancake-sort";
 import BucketSort from "./array/sort/bucket-sort";
@@ -19,6 +20,8 @@ import BoyerMooreMajority from "./algorithm/Boyer–Moore-Majority";
 import JobScheduling from "./algorithm/greedy-job-scheduling";
 import StableMatching from "./algorithm/stable-matching";
 import BubbleSort from "./array/sort/bubble-sort";
+import MOsAlgorithm from "./algorithm/MO’s-algorithm";
+import RangeAddQueries from "./algorithm/range-add-queries";
 // import ShellSort from "./array/sort/shell-sort";
 
 
@@ -33,7 +36,7 @@ const array3 = [ 2, 3, 4, 5, 6];
 // BucketSort.sort(array1);
 // ShellSort
 
-BubbleSort.test();
+SegmentsTree.test();
 
 // console.log(array1, array3, 'RadixSort')
 

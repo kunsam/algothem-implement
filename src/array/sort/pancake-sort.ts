@@ -43,5 +43,12 @@ export default class PancakeSort {
       }
     }
   }
+
+  public static test() {
+    const array = [10, 2, 4, 7, 1, 29, 15, 10, 5]
+    PancakeSort.sort(array);
+    console.log(array, 'arrayarray')
+  }
+  
   
 }

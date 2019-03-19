@@ -23,7 +23,6 @@ export default class BoyerMooreMajority {
       }
     }
     const majorElement = arr[index];
-
     count = 0;
     for (let i = arr.length - 1; i >= 0; i--) {
       if (arr[i] === majorElement) {
@@ -33,7 +32,6 @@ export default class BoyerMooreMajority {
     if (count > Math.floor(arr.length / 2)) {
       return majorElement;
     }
-
     return undefined;
 
   }

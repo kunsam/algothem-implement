@@ -8,12 +8,9 @@ export default class ZSearch {
 
   public static search(text: string, pattern: string): number[] {
     const len = pattern.length + text.length + 1;
-
     const z = new Array(len);
     z[0] = 0;
-
     const concat = `${pattern}$${text}`;
-
     let left = 0;
     let right = 0;
     for (let i = 1; i < concat.length; i++) {
@@ -38,7 +35,6 @@ export default class ZSearch {
         right--;
       }
     }
-
     let positions: number[] = [];
     for (let i = 0; i < len; i++) {
       if (z[i] === pattern.length) {

@@ -1,5 +1,3 @@
-import { swapArrayElement } from "../array-util";
-
 
 /**
  * 冒泡排序
@@ -20,7 +18,7 @@ export default class BubbleSort {
     for (let i: number = 0; i < arr.length - 1; i++) {
       for(let j = 0; j < arr.length - i - 1; j++) {
         if (arr[j + 1] < arr[j]) {
-          swapArrayElement(j+1, j, arr);
+          [arr[j+1], arr[j]] = [arr[j], arr[j+1]];
         }
       }
     }
@@ -37,7 +35,7 @@ export default class BubbleSort {
       swapped = false; 
       for(let j = 0; j < arr.length - i - 1; j++) {
         if (arr[j + 1] < arr[j]) {
-          swapArrayElement(j+1, j, arr);
+          [arr[j+1], arr[j]] = [arr[j], arr[j+1]];
           swapped = true;
         }
       }
