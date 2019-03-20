@@ -1,4 +1,6 @@
-import { SegmentsTree } from './tree/segments-tree';
+import { ArrayElementFlagWithBit } from './algorithm/array-flag-with-bit-space';
+import { StringSegmentsTree } from './tree/string-segments-tree';
+
 
 import PancakeSort from "./array/sort/pancake-sort";
 import BucketSort from "./array/sort/bucket-sort";
@@ -22,6 +24,7 @@ import StableMatching from "./algorithm/stable-matching";
 import BubbleSort from "./array/sort/bubble-sort";
 import MOsAlgorithm from "./algorithm/MO’s-algorithm";
 import RangeAddQueries from "./algorithm/range-add-queries";
+
 // import ShellSort from "./array/sort/shell-sort";
 
 
@@ -36,7 +39,6 @@ const array3 = [ 2, 3, 4, 5, 6];
 // BucketSort.sort(array1);
 // ShellSort
 
-SegmentsTree.test();
-
+ArrayElementFlagWithBit.test()
 // console.log(array1, array3, 'RadixSort')
 
