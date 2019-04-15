@@ -7,7 +7,7 @@ import * as React from 'react'
 import * as THREE from 'three'
 import AppLayout, { AppBase } from '../app/app';
 import { AppCanvas } from '../app/app-interface';
-import ObjectInspector from 'react-object-inspector';
+import { ObjectInspector } from 'react-inspector';
 import FontManager from '../../src/view/font/font-manager';
 import { EventManager } from '../../src/core/event/event-manager';
 import { AppBaseEventType } from '../../src/core/contants/events';
