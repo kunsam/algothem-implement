@@ -77,15 +77,17 @@ export function WithOperation(
           />
           <div className="right-global-panel">
             <Button
+              href="123"
               type="primary"
               icon="play-circle"
-              style={{ height: 20 }}
+              style={{ height: 20, lineHeight: 20 }}
               onClick={this.onReplay.bind(this)}
             >
               回放[P]
             </Button>
             <Button
-              style={{ marginLeft: 5, height: 20 }}
+              href="123"
+              style={{ marginLeft: 5, height: 20, lineHeight: 20 }}
               type="primary"
               icon={toggleAnimate ? "close" : "check"}
               onClick={this.onHandleOpenAnimate.bind(this)}

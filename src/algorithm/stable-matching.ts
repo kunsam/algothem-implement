@@ -1,4 +1,3 @@
-import { any } from "prop-types";
 
 
 export interface Ranks {
@@ -41,9 +40,12 @@ export default class StableMatching {
   public static get(ARank: Ranks, BRank: Ranks) {
     const A: IRankObject = init(ARank);
     const B: IRankObject = init(BRank);
-    let a: IRankData;
+    let a: IRankData | undefined;
     while ((a = extractUnstable(A))) {
       const bKey = a.rankKeys.shift();
+      if (!bKey) {
+        break
+      }
       const b = B[bKey];
       if (b.stable === undefined) {
         // 单身就交换

@@ -1,5 +1,4 @@
 import { NBasicTreeNode } from "./node/basic-node";
-// import { MergeSortWithArray } from '../array/sorting';
 import { BasicBinaryTree } from "./basic-binary-tree";
 import { BinarySearchTreeUtil } from "./binary-search-tree-util";
 import MergeSort from "../array/sort/merge-sort";

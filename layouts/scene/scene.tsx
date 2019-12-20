@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import React, { Component } from 'react'
 import { AppCanvas } from '../app/app-interface.js';
-import { OrbitControls } from '../../static/js/orbitcontrol.js';
+import { OrbitControls } from '../../public/static/js/orbitcontrol.js';
 
 export default class AppScene extends Component<{ onDidMount: (a: AppCanvas) => void }, any> {
  

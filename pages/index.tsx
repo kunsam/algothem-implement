@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import { Button } from "antd";
-import Router from "next/router";
+import Router, { withRouter } from "next/router";
+import Link from "next/link";
 
 // 作为一个中间跳转页了
-export default class Index extends Component {
+
+export class Index extends Component<any, any> {
   // 这里的样式仿照google cloud的样式就ok
   render() {
     return (
@@ -12,7 +14,7 @@ export default class Index extends Component {
         <div>
           <Button
             onClick={() => {
-              Router.push({
+              this.props.router.push({
                 pathname: "/tree/basic-binary-tree-page"
               });
             }}
@@ -21,17 +23,23 @@ export default class Index extends Component {
           </Button>
         </div>
         <div>
-          <Button
-            onClick={() => {
-              Router.push({
-                pathname: "/tree/red-black-tree-page"
-              });
-            }}
-          >
-            红黑树算法演示
-          </Button>
+          <Link href="/tree/red-black-tree-page">123</Link>
+          <Link href="/tree/red-black-tree-page">
+            <Button
+              onClick={() => {
+                console.log("RouterRouter");
+                Router.push({
+                  pathname: "/tree/red-black-tree-page"
+                });
+              }}
+            >
+              红黑树算法演示
+            </Button>
+          </Link>
         </div>
       </div>
     );
   }
 }
+
+export default withRouter(Index)
