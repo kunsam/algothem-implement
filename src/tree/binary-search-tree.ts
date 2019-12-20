@@ -1,8 +1,8 @@
-import { NBasicTreeNode } from './node/basic-node';
-import { MergeSortWithArray } from '../array/sorting';
-import { BasicBinaryTree } from './basic-binary-tree';
-import { BinarySearchTreeUtil } from './binary-search-tree-util';
-
+import { NBasicTreeNode } from "./node/basic-node";
+// import { MergeSortWithArray } from '../array/sorting';
+import { BasicBinaryTree } from "./basic-binary-tree";
+import { BinarySearchTreeUtil } from "./binary-search-tree-util";
+import MergeSort from "../array/sort/merge-sort";
 
 export class BinarySearchTree extends BasicBinaryTree {
   constructor(root?: NBasicTreeNode) {
@@ -25,12 +25,12 @@ export class BinarySearchTree extends BasicBinaryTree {
   }
 
   public inorder() {
-    return BinarySearchTreeUtil.inorderTraverse(this.root, (node) => {
-      console.log('node key:', node.key);
+    return BinarySearchTreeUtil.inorderTraverse(this.root, node => {
+      console.log("node key:", node.key);
       return undefined;
     });
   }
- 
+
   public minValueNode() {
     return BinarySearchTreeUtil.minValueNode(this.root);
   }
@@ -41,12 +41,16 @@ export class BinarySearchTree extends BasicBinaryTree {
   }
 
   public setFromInorderArray(inorderArray: number[]) {
-    this.root = BinarySearchTreeUtil.constructUtil().fromSortedArray(inorderArray);
+    this.root = BinarySearchTreeUtil.constructUtil().fromSortedArray(
+      inorderArray
+    );
     return this;
   }
 
   public setFromPreorderArray(preorderArray: number[]) {
-    this.root = BinarySearchTreeUtil.constructUtil().fromPreorderArray(preorderArray);
+    this.root = BinarySearchTreeUtil.constructUtil().fromPreorderArray(
+      preorderArray
+    );
     return this;
   }
 
@@ -56,11 +60,17 @@ export class BinarySearchTree extends BasicBinaryTree {
   }
 
   public merge(binaryST: BinarySearchTree) {
-    const toInorder = (node: NBasicTreeNode) => BinarySearchTreeUtil.transformUtil().toInorderArray(node);
+    const toInorder = (node: NBasicTreeNode) =>
+      BinarySearchTreeUtil.transformUtil().toInorderArray(node);
     const thisOrderArray = toInorder(this.root);
     const anotherBSTOrderArray = toInorder(binaryST.root);
-    const mergedArray = MergeSortWithArray(thisOrderArray, anotherBSTOrderArray);
-    this.root = BinarySearchTreeUtil.constructUtil().fromSortedArray(mergedArray);
+    // MergeSortWithArray(thisOrderArray, anotherBSTOrderArray);
+    // 合并排序
+    const mergedArray = thisOrderArray.concat(anotherBSTOrderArray);
+    MergeSort.sort(mergedArray);
+    this.root = BinarySearchTreeUtil.constructUtil().fromSortedArray(
+      mergedArray
+    );
     return this;
   }
 
@@ -70,14 +80,7 @@ export class BinarySearchTree extends BasicBinaryTree {
     // return BinarySearchTreeUtil.getKthSmallestElementWithMorrisTraversal(k, this.root);
   }
 
-  public getMaxDepthNode(): { node: NBasicTreeNode, depth: number } {
+  public getMaxDepthNode(): { node: NBasicTreeNode; depth: number } {
     return BinarySearchTreeUtil.getMaxDepthRecursion(this.root);
   }
-
-
-
-
 }
-
-
-
