@@ -11,9 +11,6 @@ export enum IBasicTreeEventType {
   onRightRotate = "onRightRotate"
 }
 
-const dd = new TreePageBase({ app: new AppBase() });
-console.log(dd, "TreePageBase");
-
 class BinaryTreePage extends TreePageBase {
 
   protected getEvent(): ITreeEvent[] {

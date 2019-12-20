@@ -6,7 +6,7 @@ class BinaryTreeInfoPanelComp extends React.Component<any, any> {
   render() {
     return (
       <div>
-        <a href="www.baidu.com">Basic Binary Tree</a>
+        <a href="/">回到首页</a>
       </div>
     )
   }

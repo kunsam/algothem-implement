@@ -4,6 +4,7 @@ import { Button } from "antd";
 import { AppBase } from "../../layouts/app/app";
 import { AppCommandEventType } from "../../src/core/contants/events";
 import { KeyboardEventContext } from "../../src/core/event/context/keyboard-event-context";
+import Router from "next/router";
 
 export function WithOperation(
   WrappedComponent: React.ComponentClass<any, any>
@@ -77,8 +78,17 @@ export function WithOperation(
           />
           <div className="right-global-panel">
             <Button
-              href="123"
-              type="primary"
+              href="/"
+              type="ghost"
+              icon="play-circle"
+              style={{ height: 20, lineHeight: 20 }}
+              onClick={() => {
+                Router.push("/");
+              }}
+            >
+              回放[P]
+            </Button>
+            <Button
               icon="play-circle"
               style={{ height: 20, lineHeight: 20 }}
               onClick={this.onReplay.bind(this)}
@@ -86,9 +96,7 @@ export function WithOperation(
               回放[P]
             </Button>
             <Button
-              href="123"
-              style={{ marginLeft: 5, height: 20, lineHeight: 20 }}
-              type="primary"
+              style={{ marginLeft: 5, height: 20, lineHeight: `20px` }}
               icon={toggleAnimate ? "close" : "check"}
               onClick={this.onHandleOpenAnimate.bind(this)}
             >
