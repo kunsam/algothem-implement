@@ -78,19 +78,8 @@ export function WithOperation(
           />
           <div className="right-global-panel">
             <Button
-              href="/"
-              type="ghost"
               icon="play-circle"
-              style={{ height: 20, lineHeight: 20 }}
-              onClick={() => {
-                Router.push("/");
-              }}
-            >
-              回放[P]
-            </Button>
-            <Button
-              icon="play-circle"
-              style={{ height: 20, lineHeight: 20 }}
+              style={{ height: 20, lineHeight: `20px` }}
               onClick={this.onReplay.bind(this)}
             >
               回放[P]

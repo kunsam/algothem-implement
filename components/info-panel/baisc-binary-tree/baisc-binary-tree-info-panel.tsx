@@ -1,12 +1,13 @@
 
 import * as React from 'react'
 import { WithInfoPanel } from '../info-panel';
+import Link from 'next/link'
 
 class BinaryTreeInfoPanelComp extends React.Component<any, any> {
   render() {
     return (
       <div>
-        <a href="/">回到首页</a>
+        <Link href="/">回到首页</Link>
       </div>
     )
   }
