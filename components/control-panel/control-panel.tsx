@@ -1,32 +1,38 @@
+import * as React from "react";
+import "./control-panel.less";
+import { Button } from "antd";
+import { AppBase } from "../../layouts/app/app";
+import { AppCommandEventType } from "../../src/core/contants/events";
+import { KeyboardEventContext } from "../../src/core/event/context/keyboard-event-context";
 
-import * as React from 'react'
-import './control-panel.less';
-import { Button } from 'antd';
-import { AppBase } from '../../layouts/app/app';
-import { AppCommandEventType } from '../../src/core/contants/events';
-import { KeyboardEventContext } from '../../src/core/event/context/keyboard-event-context';
-
-
-export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) {
-
-  return class extends React.Component<{ app: AppBase }, { operating: boolean, toggleAnimate: boolean }> {
+export function WithOperation(
+  WrappedComponent: React.ComponentClass<any, any>
+) {
+  return class extends React.Component<
+    { app: AppBase },
+    { operating: boolean; toggleAnimate: boolean }
+  > {
     private _operationDone: boolean;
     constructor(props: any) {
       super(props);
       this.state = {
         operating: false,
-        toggleAnimate: true,
+        toggleAnimate: true
       };
       this._operationDone = false;
     }
     componentDidMount() {
       if (this.props.app) {
-        this.props.app.eventManager.commandEvents().listenOperationDone(this.onOperationDone.bind(this));
-        this.props.app.eventManager.keyboardEvents().listenKeyDown((context: KeyboardEventContext) => {
-          if (context.args && context.args.keyCode === 80) {
-            this.onReplay();
-          }
-        });
+        this.props.app.eventManager
+          .commandEvents()
+          .listenOperationDone(this.onOperationDone.bind(this));
+        this.props.app.eventManager
+          .keyboardEvents()
+          .listenKeyDown((context: KeyboardEventContext) => {
+            if (context.args && context.args.keyCode === 80) {
+              this.onReplay();
+            }
+          });
       }
     }
 
@@ -39,25 +45,25 @@ export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) 
       this.setState({ operating: true }, () => {
         if (this._operationDone) {
           this._operationDone = false;
-          this.setState({ operating: false })
+          this.setState({ operating: false });
         }
       });
     }
 
     public onReplay() {
       if (this.props.app) {
-        this.props.app.eventManager.commandEvents().emitEvent(
-          AppCommandEventType.rePlay
-        );
+        this.props.app.eventManager
+          .commandEvents()
+          .emitEvent(AppCommandEventType.rePlay);
       }
     }
     public onHandleOpenAnimate() {
       if (this.props.app) {
-        this.props.app.eventManager.commandEvents().emitEvent(
-          AppCommandEventType.toggleAnimate,
-        );
+        this.props.app.eventManager
+          .commandEvents()
+          .emitEvent(AppCommandEventType.toggleAnimate);
       }
-      this.setState({ toggleAnimate: !this.state.toggleAnimate })
+      this.setState({ toggleAnimate: !this.state.toggleAnimate });
     }
 
     render() {
@@ -70,19 +76,26 @@ export function WithOperation(WrappedComponent: React.ComponentClass<any, any>) 
             onOperationConfirm={this.onOperationConfirm.bind(this)}
           />
           <div className="right-global-panel">
-            <Button type="primary" icon="play-circle" onClick={this.onReplay.bind(this)}>
+            <Button
+              type="primary"
+              icon="play-circle"
+              style={{ height: 20 }}
+              onClick={this.onReplay.bind(this)}
+            >
               回放[P]
             </Button>
             <Button
-              style={{ marginLeft: 5 }}
-              type="primary" icon={ toggleAnimate ? 'close' : 'check'}
+              style={{ marginLeft: 5, height: 20 }}
+              type="primary"
+              icon={toggleAnimate ? "close" : "check"}
               onClick={this.onHandleOpenAnimate.bind(this)}
-            >{toggleAnimate ? '关闭动画' : '打开动画'}</Button>
+            >
+              {toggleAnimate ? "关闭动画" : "打开动画"}
+            </Button>
           </div>
-          <div style={{ clear: 'both' }}/>
+          <div style={{ clear: "both" }} />
         </div>
-      )
+      );
     }
-
-  }
+  };
 }

@@ -1,5 +1,4 @@
 import "./tree-page.less";
-import "antd/lib/modal/style/index.css";
 import { Modal } from "antd";
 import * as React from "react";
 import * as THREE from "three";

@@ -1,30 +1,24 @@
-import "./style/binary-tree-control-panel.less"
-import "antd/lib/tree-select/style/index.css"
-import "antd/lib/select/style/index.css"
+import "./style/binary-tree-control-panel.less";
 
-import * as React from 'react'
-import { TreeSelect } from 'antd';
-import { WithOperation } from './control-panel';
-import { AppBase } from '../../layouts/app/app';
-import { BasicBinaryTree } from '../../src/tree/basic-binary-tree';
-import GetMockBinaryTree from '../../src/tree/mock/binary-tree-mock';
-import { ButtonInputPair } from '../button-input-pair/button-input-pair';
-import { IBasicTreeEventType } from '../../pages/tree/basic-binary-tree-page';
+import * as React from "react";
+import { TreeSelect } from "antd";
+import { WithOperation } from "./control-panel";
+import { AppBase } from "../../layouts/app/app";
+import { BasicBinaryTree } from "../../src/tree/basic-binary-tree";
+import GetMockBinaryTree from "../../src/tree/mock/binary-tree-mock";
+import { ButtonInputPair } from "../button-input-pair/button-input-pair";
+import { IBasicTreeEventType } from "../../pages/tree/basic-binary-tree-page";
 import { AppCommandEventType } from "../../src/core/contants/events";
 
 const MOCK_MAP: Map<string, BasicBinaryTree[]> = new Map();
-MOCK_MAP.set('leftRotate', GetMockBinaryTree.getLeftRotateMock());
-MOCK_MAP.set('rightRotate', GetMockBinaryTree.getRightRotateMock());
+MOCK_MAP.set("leftRotate", GetMockBinaryTree.getLeftRotateMock());
+MOCK_MAP.set("rightRotate", GetMockBinaryTree.getRightRotateMock());
 
-
-class Component extends React.Component<
-  {
-    app: AppBase,
-    operating: boolean,
-    onOperationConfirm: Function,
-  }
-> {
-
+class Component extends React.Component<{
+  app: AppBase;
+  operating: boolean;
+  onOperationConfirm: Function;
+}> {
   private _currentSelectTree?: string;
 
   public getTreeSelections() {
@@ -32,8 +26,7 @@ class Component extends React.Component<
     MOCK_MAP.forEach((data, key) => {
       tree.push(
         <TreeSelect.TreeNode key={`tree${key}`} value={key} title={key}>
-        {
-          data.map((_, index) => (
+          {data.map((_, index) => (
             <TreeSelect.TreeNode
               key={`tree${key}${index}`}
               value={`tree-${key}-${index}`}
@@ -41,10 +34,9 @@ class Component extends React.Component<
             >
               树{index}
             </TreeSelect.TreeNode>
-          ))
-        }
+          ))}
         </TreeSelect.TreeNode>
-      )
+      );
     });
     return tree;
   }
@@ -60,15 +52,14 @@ class Component extends React.Component<
       >
         {this.getTreeSelections()}
       </TreeSelect>
-    )
+    );
   }
 
   public onSelectTree(value: string) {
-
     if (!value) return;
     if (this._currentSelectTree === value) return;
 
-    const values = value.split('-');
+    const values = value.split("-");
     if (values.length < 3) {
       return;
     }
@@ -80,26 +71,28 @@ class Component extends React.Component<
     const treeArray = MOCK_MAP.get(type);
     if (treeArray && treeArray[index]) {
       this._currentSelectTree = value;
-      this.props.app.eventManager.commandEvents().emitEvent(
-        AppCommandEventType.onSelectTree,
-        treeArray[index],
-      );
+      this.props.app.eventManager
+        .commandEvents()
+        .emitEvent(AppCommandEventType.onSelectTree, treeArray[index]);
     }
-
   }
-  
+
   public onConfirmLeftRotate(key: string) {
     if (!key) return;
-    this.props.app.eventManager.commandEvents().emitKeyEvent(IBasicTreeEventType.onLeftRotate, key);
+    this.props.app.eventManager
+      .commandEvents()
+      .emitKeyEvent(IBasicTreeEventType.onLeftRotate, key);
     this.props.onOperationConfirm();
   }
 
   public onConfirmRightRotate(key: string) {
     if (!key) return;
-    this.props.app.eventManager.commandEvents().emitKeyEvent(IBasicTreeEventType.onRightRotate, key);
+    this.props.app.eventManager
+      .commandEvents()
+      .emitKeyEvent(IBasicTreeEventType.onRightRotate, key);
     this.props.onOperationConfirm();
   }
-  
+
   render() {
     const { operating } = this.props;
     return (
@@ -120,10 +113,9 @@ class Component extends React.Component<
         />
         {this.getTreeSelect()}
       </div>
-    )
+    );
   }
-
 }
 
-const BinartTreePageControlPanel  = WithOperation(Component);
+const BinartTreePageControlPanel = WithOperation(Component);
 export default BinartTreePageControlPanel;

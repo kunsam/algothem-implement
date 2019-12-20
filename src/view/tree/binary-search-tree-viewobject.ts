@@ -1,7 +1,5 @@
 
 import { message } from 'antd';
-import 'antd/lib/message/style/index.css';
-
 import { AppBase } from './../../../layouts/app/app';
 import { BinarySearchTree } from './../../tree/binary-search-tree';
 import { RedBlackTree } from '../../tree/red-black-tree';

@@ -1,5 +1,4 @@
 import { message } from 'antd';
-import 'antd/lib/message/style/index.css';
 import FontManager from '../font/font-manager';
 import { AppBase } from './../../../layouts/app/app';
 import { RBNode } from '../../tree/node/red-black-node';

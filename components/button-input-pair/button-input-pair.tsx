@@ -1,8 +1,8 @@
-import { Button, Input } from 'antd';
-import * as React from 'react'
-import './button-input-pair.less';
+import { Button, Input } from "antd";
+import * as React from "react";
+import "./button-input-pair.less";
 
-export interface ButtonInputPairProps{
+export interface ButtonInputPairProps {
   type?: string;
   label: string;
   className?: string;
@@ -11,12 +11,15 @@ export interface ButtonInputPairProps{
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export class ButtonInputPair extends React.Component<ButtonInputPairProps, any> {
+export class ButtonInputPair extends React.Component<
+  ButtonInputPairProps,
+  any
+> {
   constructor(props: ButtonInputPairProps) {
     super(props);
     this.state = {
-      value: '',
-    }
+      value: ""
+    };
   }
 
   public onInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -27,25 +30,33 @@ export class ButtonInputPair extends React.Component<ButtonInputPairProps, any> 
   public onClick() {
     if (this.state.value) {
       this.props.onConfirm(this.state.value);
-      this.setState({ value: '' });
+      this.setState({ value: "" });
     }
   }
 
   render() {
     const { className } = this.props;
     return (
-      <div className={`ButtonInputPair ${className}`}>
+      <div className={`ButtonInputPair ${className || ""}`}>
         <Input
+          style={{ width: 100, height: 20 }}
           type={this.props.type}
           value={this.state.value}
-          disabled={this.props.disabled === undefined ? false : this.props.disabled}
+          disabled={
+            this.props.disabled === undefined ? false : this.props.disabled
+          }
           onKeyDown={e => {
-            if (e.keyCode === 13) this.onClick()
+            if (e.keyCode === 13) this.onClick();
           }}
           onChange={this.onInputChange.bind(this)}
         />
-        <Button onClick={this.onClick.bind(this)} >{this.props.label}</Button>
+        <Button
+          style={{ height: 20 }}
+          onClick={this.onClick.bind(this)}
+        >
+          {this.props.label}
+        </Button>
       </div>
-    )
+    );
   }
 }
