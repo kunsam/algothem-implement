@@ -62,10 +62,10 @@ export default function knuthMorrisPrattSearch(string: string, substr: string) {
 
 export function testKMP() {
 
-  function randString(length: number) {
-    const result = Math.random().toString(36);
-    return result.substring(result.length - length);
-  }
+  // function randString(length: number) {
+  //   const result = Math.random().toString(36);
+  //   return result.substring(result.length - length);
+  // }
 
   // const string = randString(15);
   // const startIndex = Math.floor(Math.random() * 10); // Random start index from 0 to 9
